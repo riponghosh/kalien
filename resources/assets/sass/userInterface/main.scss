@@ -1,0 +1,16 @@
+.tab-content-bs {
+  padding: 0;
+  border: none;
+}
+.img-fit-center-thumbnail{
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+.img-fit-cover {
+  -o-object-fit: cover;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}

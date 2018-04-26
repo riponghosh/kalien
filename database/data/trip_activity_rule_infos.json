@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "info": "age_min"
+    },
+    {
+        "id": 2,
+        "info": "age_max"
+    },
+    {
+        "id": 3,
+        "info": "refund_forbidden"
+    },
+    {
+        "id": 4,
+        "info": "refund_before_n_day"
+    },
+    {
+        "id": 5,
+        "info": "group_participant_min"
+    },
+    {
+        "id": 6,
+        "info": "group_participant_max"
+    },
+    {
+        "id": 7,
+        "info": "group_participant_between"
+    }
+]

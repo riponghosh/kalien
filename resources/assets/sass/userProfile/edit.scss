@@ -1,0 +1,173 @@
+$primary_color : #81cfb3;
+$semantic_danger_color : #f12d64; /*danger*/
+$neu_border_color : rgba(0,0,0,0.3); /*border bottom*/
+$neu_dark_container_color : #353a4c;/*dark-container background*/
+
+$information_block_width : 500;
+input.kal-style{
+  font-size : 1.1rem;
+  box-shadow: none;
+
+  &:focus{
+    -webkit-box-shadow :none;
+    box-shadow: none;
+  }
+}
+.row{
+  margin-bottom: 10px;
+}
+@media screen and (max-width: 768px){
+.xs-center{
+  max-width : #{$information_block_width}px;
+  margin : auto;
+}
+}
+
+.form-control-success{
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%235cb85c' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center right .5625rem;
+  -webkit-background-size: 1.125rem 1.125rem;
+  background-size: 1.125rem 1.125rem;
+  border : 1px #{$primary_color} solid;
+} 
+
+.edit-UserProfile{
+  height : 1000px;
+  font-size: 1.2rem;
+  a{
+    color : white;
+  }
+  #sidebar-wrapper{
+    margin-top: -15px;
+  }
+  aside{
+    .icon-container{
+      height : 180px;
+      width : 150px;
+      position: relative;
+      label.upload-userIcon{
+        position: absolute;
+        z-index : 3;
+        display: block;
+        width : 100%;
+        height : 100%;
+
+        &:hover{
+          border : 3px #{$primary_color} solid;
+        };
+        input[type=file]{
+          display: none;
+        }
+      }
+      .img-container{
+        z-index: 1;
+        position : absolute;
+        width : 100%;
+        height : 180px;
+        background-image: url('/img/icon/user_icon_bg.png');
+  
+        img{
+          background-color : black;
+          object-fit: cover;
+          width : 100%;
+          height : 100%;
+        }
+      }
+      .name-container{
+        font-size : 1.4rem;
+        font-weight: 300;
+        color : #ffffff;
+        height : 120px;
+        width : 100%;
+        padding : 85px 10px 10px 10px;
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0.5));
+        z-index: 2;
+        position : absolute;
+        bottom : 0;
+      }
+    }
+    .menus{
+      margin-top : 14px;
+      color : #ffffff;
+      font-size: 1.2rem;
+      li.active{
+        a{
+          color : #{$primary_color};
+          &:hover{
+            color: #{$primary_color};
+            background-color : #212121;
+          }  
+        }
+        border-right : 4px #{$primary_color} solid; 
+        background-color : #212121;     
+      }
+      li{
+        &:not(.active){
+          a{
+            padding-left: 18px;
+            &:hover{
+            background-color: white;
+            color: #{$primary_color};
+            border-right : 4px #{$primary_color} solid;
+            }
+          }        
+        }
+
+      }
+    }
+  }
+  .main-col{
+    height : 100%;
+     .header{
+      .title{
+        font-size : 2rem;
+      
+      }
+      .explain{
+        font-size : 1rem;
+           }
+    }
+    form.information-block{
+      display: block;
+      overflow-x: hidden;
+      background-color : #ffffff;
+      max-width : #{$information_block_width}px;
+      padding : 0 10px 0 10px;
+      margin-top : 10px;
+      border-radius : 5px;
+
+      .header{
+        font-size : 1.4rem;
+        padding: 10px 15px;
+        border-bottom: 1px solid transparent;
+        border-top-right-radius: 3px;
+        border-top-left-radius: 3px;
+        padding : 10px 0 10px 0;
+        box-sizing: border-box;
+        border-bottom : 1px  #000000 solid;
+      }
+      .body.introduction{
+        height : 250px;
+      }
+      .body{
+        display: block;
+        padding-top : 15px;
+        border : 0;
+      }
+      .footer{
+        text-align : center;
+        height : 50px;
+          .submit-btn{
+            font-size : 1.2rem;
+            width: 260px;
+            height: 36px;
+            border: 0;
+            border-radius: 50px;
+            background: #86d5b9;
+            color: white;
+          }
+      }
+    }
+  }
+}

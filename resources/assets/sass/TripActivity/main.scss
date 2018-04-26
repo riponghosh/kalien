@@ -1,0 +1,106 @@
+.trip-activity-body,.group-activity-body{
+  .left-side{
+    width: 66.66666667%;
+
+    .activity-promo-section{
+      .trip-activity-intro{
+      }
+      .trip-activity-intro-imgs{
+        img{
+          width: 100%;
+        }
+      }
+    }
+  }
+  .trip-activity-section-title{
+    margin-bottom: 25px;
+  }
+
+  .price-plan-section{
+    .price-plan-list{
+      .activity-ticket-plan{
+        border: 1px #e1e1e1 solid;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+@media screen and (min-width: 992px){
+  .trip-activity-header{
+    height: 580px;
+
+    .trip-activity-header-container-title-wrapper{
+      padding-top: 450px;
+    }
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 992px){
+  .trip-activity-header{
+    height: 380px;
+
+    .trip-activity-header-container-title-wrapper{
+      padding-top: 250px;
+    }
+  }
+
+  .trip-activity-body {
+    .left-side {
+      width: 100%;
+      .price-plan-list{
+        width: 70%;
+      }
+    }
+  }
+}
+@media screen and (max-width: 768px){
+  .trip-activity-header{
+    height: 250px;
+
+    .trip-activity-header-container-title-wrapper{
+      padding-top: 150px;
+    }
+  }
+  .trip-activity-body {
+    .left-side {
+      width: 100%;
+      .price-plan-list{
+        width: 100%;
+      }
+    }
+  }
+}
+.trip-activity-header{
+  width: 100%;
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+
+  .trip-activity-header-bottom-overlay{
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+0,000000+100&0.65+0,0+100;Neutral+Density */
+    background: -moz-linear-gradient(bottom, rgba(0,0,0,0.65) 5%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(bottom, rgba(0,0,0,0.65) 5%,rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 5%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=0 ); /* IE6-9 */
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .trip-activity-header-container{
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 1100px;
+    margin-right: auto;
+    margin-left: auto;
+
+    .trip-activity-header-container-title-wrapper{
+      position: relative;
+      .title{
+        color: #FFF;
+      }
+    }
+  }
+}

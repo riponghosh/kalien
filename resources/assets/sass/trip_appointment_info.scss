@@ -1,0 +1,30 @@
+.list-key{
+  color: #1b6d85;
+}
+.tourist-img-container{
+  width: 120px;
+  height: 120px;
+
+}
+.commit{
+  padding-top: 10px;
+
+  .commit-user-icon{
+    border-radius: 3px;
+  }
+
+  .commit-body{
+    margin-left: 40px;
+
+    .commit-text{
+      border: 1px #e3e3e3 solid;
+      border-radius: 2px;
+      padding: 7px 12px 8px;
+
+      .commit-header{
+        font-size: 12px;
+        font-weight: bold;
+      }
+    }
+  }
+}

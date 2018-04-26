@@ -1,0 +1,33 @@
+<?php
+    return [
+        'Title' => '稱謂',
+        'TitleMale' => '先生',
+        'TitleFemale' => '女士',
+        'YourInformation' => '利用者情報',
+        'PassportFirstName' => '名（ローマ字）',
+        'PassportLastName' => '姓（ローマ字）',
+        'PaymentType' => 'お支払い方法の確認',
+        'PhoneNumber' => '電話番号',
+        'CardNumber' => 'クレジットカード',
+        'ExpiryDate' => 'カード有効期限',
+        'SecurityCode' => 'CVC',
+        'useDate' => '利用日',
+        'ItemDetail' => '項目',
+        'Qty' => '數量',
+        'Pay' => 'お支払い',
+        'Total' => '総額',
+        'PaymentAmount' => '決済金額',
+        'ReceiptInfo' => ' 領収書インフォメーション',
+        'EReceipt' => '電子領収書',
+        'DonateYourReceipt' => ' 領収書を寄付する',
+        'taxID' => 'tax ID',
+        'AddressForReceiptLottery' => '領収書が当たった住所',
+        'IAgreeAndAccept' => 'I agree and accept',
+        'PrivacyPolicy' => 'サービスポリシー',
+        'And' => 'and',
+        'Yes' => 'はい',
+        'No' => 'いいえ',
+        'ServicePolicy' => 'プライバシーポリシー',
+        'RuleOfGOVReceipt' => '*領収書の利用規範により、領収書を作成した後、新しい領収書を作成や内容変更をすることができません'
+    ];
+?>

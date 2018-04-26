@@ -1,0 +1,231 @@
+$primary_color : #81cfb3;
+$semantic_danger_color : #f12d64; /*danger*/
+$neu_border_color : rgba(0,0,0,0.3); /*border bottom*/
+$neu_dark_container_color : #353a4c;/*dark-container background*/
+
+.row-no-padding > [class*="col-"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+.row-no-margin-bottom{
+  margin-bottom: 0 !important;
+}
+.row_margin_top_5{
+  margin-top : 5px;
+}
+.col_md_left{
+  @media screen and (min-width: 768px){
+    padding-left : 0;
+    padding-right : 5px;
+  }
+  @media screen and (max-width: 768px){
+    padding-left : 0;
+    padding-right : 0;
+  }
+}
+.col_no_padding{
+  padding : 0;
+}
+a{
+    cursor: pointer;
+}
+ul,li{
+    list-style-type: none;
+    padding: 0;
+    display: block;
+}
+.remove-btn-default{
+  border: none;
+}
+#userModal{
+  .modal-dialog{
+    margin : auto;
+    margin-top : 10px;
+    .modal-content{
+      background: none;
+      box-shadow: none;
+      border : none;
+    }
+  }
+  .modal-dialog{
+      width : 650px;
+  }
+  @media screen and (max-width: 768px){
+    .modal-dialog{
+      width : 100%;
+    }
+  }
+  .user_modal-close{
+    &:hover{
+      cursor: pointer;
+    }
+    position: absolute;
+    right : 30px;
+    top: 10px;
+    color: white;
+    z-index: 1000;
+  }
+}
+.userProfile{
+    color : white;
+    margin: 0 auto;
+}
+@media screen and (max-width: 768px){
+  .userProfile{
+    width : 100%;
+  }  
+}
+@media screen and (min-width: 768px){
+  .userProfile{
+    width : 650px;
+  }  
+}
+hr{
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 0;
+    border-top: 1px solid #dce0e0;
+}
+.userProfile{
+  .row{
+    margin-left: 0;
+    margin-right: 0; 
+  }
+  .m-b-8{
+    margin-bottom : 8px;
+  }
+  .m-b-22{
+    margin-bottom : 22px;
+  }
+  .default_block_style{
+    background-color: #{$neu_dark_container_color};
+  }
+  .icon-container{
+    @media screen and (max-width: 768px){
+        height : 160px; 
+    }
+    height : 180px;
+    position: relative;
+    .img-container{
+      z-index: 1;
+      position : absolute;
+      width : 100%;
+      height : 100%;
+      background-image: url('/img/icon/user_icon_bg.png');
+
+      img{
+        background-color : black;
+        object-fit: cover;
+        width : 100%;
+        height : 100%;
+      }
+    }
+    .name-container{
+      @media screen and (max-width: 768px){
+        font-size : 2rem;  
+      }
+      font-size : 1.4rem;
+      font-weight: 300;
+      max-height : 120px;
+      width : 100%;
+      padding : 85px 10px 10px 10px;
+      background: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0.5));
+      z-index: 2;
+      position : absolute;
+      bottom : 0;
+    }
+  }
+  .summary{
+    display : inline-block;
+    margin-top : 22px;
+    .living-country{
+    }
+    .age{
+      
+    }
+    .submit-btn{
+      background-color: #da2f67;
+      width : 70%; 
+      font-size : 1.6rem;
+      font-weight: 200;
+    } 
+    .social_btn{
+      font-size : 1.4rem;
+      font-weight: 200;
+      line-height: 2.8rem;
+      height : 36px;
+      background-color: rgba(0,0,0,0.3); 
+    }
+    .social_btn_middle{
+      border-right : 1px #{$neu_dark_container_color} solid;
+      border-left : 1px #{$neu_dark_container_color} solid;
+    }
+  }
+  .language_block,.service_block{
+    height : 170px;
+    overflow: scroll;
+
+    .user_service_thumbnail{
+      width: 110px;
+      height: 120px;
+      background-color: #2a2d35 ;
+      .icon_thumbnail{
+        width: 65px;
+        height: auto;
+      }
+    }
+  }
+  .language_list{
+    .language_light{
+      margin-left : 2px;
+      margin-right: 2px;
+      float: left;
+      width : 35px;
+      height : 8px;
+      background: grey;
+    }
+    .language_light.on{
+      background: #{$primary_color};
+    }
+  }
+  .trip_Intro{
+    .trip_content{
+      .trip_media_container{
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%; //16:9
+        position: relative;
+        .trip_media{
+          width:100%;
+          height: 100%;
+          position: absolute;
+          object-fit: cover;
+        }
+      }
+    }
+    .nav,.nav-tabs-custom{
+      height: 130px;
+      border-top:  1px red solid;
+      border-bottom: 0px;
+      .trip_nav_list{
+        float : left;
+        height : 100%;
+        width : 160px;
+        a{
+          background: initial;
+
+          &:hover,&:focus{
+            background: initial;
+          }
+          .trip_nav_btn{
+            width : 100%;
+            height : 100%;
+          }
+          color : initial;
+        }
+      }
+
+    }
+  }
+
+}

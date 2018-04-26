@@ -1,0 +1,264 @@
+$green_color: #87CFB0;
+$border_style: 1px solid #C9C9C9;
+$room_width: 300px;   //by H
+$normal_room_width: 250px;
+$normal_room_height: 350px;
+$room_hieght: 100%;
+$room_top_bar_height: 40px;
+$title_height: 28;
+$bottom_height: 41;
+//customer_service
+$cs_title_height: 125;
+//----------------
+$rooms_group_max_height: 550;
+$cs_chat_bar_height: 50;
+
+.omit_text{
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#chat_rooms {
+  position: fixed;
+  right: 25px ;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+
+  *{
+    pointer-events:all;
+  }
+}
+#chat_room_cs_inline{
+  position: fixed;
+  right: 25px ;
+  bottom: 0;
+  z-index: 1000;
+}
+.chat_room_container {
+  height: #{$cs_chat_bar_height}px;  //非expand tag 高度
+  &.normal_room_container{
+    height: #{$room_top_bar_height};
+  }
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
+  margin-right: 15px;
+  .service_room_chat_bar{
+    cursor: pointer;
+    width: 100%;
+    background-color: #272b38;
+    border-radius: 5px 5px 0 0;
+    .title{
+      padding: 15px 15px 15px;
+      color: #81cfb3;
+    }
+  }
+  &.expand {
+    height: #{$rooms_group_max_height}px;
+    &.normal_size{
+      height: #{$normal_room_height};
+    }
+    opacity: 1;
+    bottom: 0;     //還原chat_rooms max height
+
+    .service_room_chat_bar {
+      height: 0;
+      opacity: 0;
+    }
+    .chat_room.cs_room{
+      opacity: 1;
+      height: 100%;
+    }
+  }
+  .chat_room.normal_room {
+    width: #{$normal_room_width};
+    height: $room_hieght;
+    border: #{$border_style};
+    -webkit-border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+    font-family: helvetica;
+    .title {
+      height: #{$room_top_bar_height};
+      padding: 5px 10px;
+      border-bottom: #{$border_style};
+      background-color: #{$green_color};
+      color : #ffffff;
+      > * {
+        float: left;
+        line-height: #{$title_height}px;
+        vertical-align: middle
+      }
+      .icon {
+        width: #{$title_height}px;
+        height: #{$title_height}px;
+        border-radius: #{$title_height}px;
+        object-fit: cover;
+      }
+      .name {
+        width: #{$room_width - $title_height - 20}px;
+        text-indent: 10px;
+      }
+      &:after {
+        content: '';
+        display: block;
+        clear: both;
+      }
+    }
+    .msgs_container {
+      height: calc(#{$room_hieght} - #{$title_height + $bottom_height + 10}px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 5px 10px;
+      background-color: #FFFFFF;
+      .msg {
+        color: white;
+        padding: 5px 8px 4px;
+        background-color: #87CFB0;
+        border-radius: 12px;
+        clear: both;
+        margin-bottom: 3px;
+        font-size: 1rem;
+        &.self {
+          float: right;
+        }
+        &.other {
+          float: left;
+        }
+      }
+    }
+
+    .send_msg_area {
+      background-color: #FFFFFF;
+      height: #{$bottom_height}px;
+      padding: 2px 6px 2px 10px;
+      border-top: $border_style;
+      box-sizing: border-box;
+      font-size: 1rem;
+      input {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        font-size: 14px;
+      }
+    }
+  }
+  .chat_room.cs_room {
+    opacity: 0;
+    width: #{$room_width};
+    //height: $room_hieght;
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+    font-family: helvetica;
+
+    .close-btn {
+      position: absolute;
+      right: 10px;
+      color: #ccc;
+      &:hover {
+        color: #ffffff;
+        cursor: pointer;
+      }
+    }
+    .title {
+      width: 100%;
+      background-color: #272b38;
+      padding: 5px 10px;
+      height: #{$cs_title_height}px;
+      //border-bottom: #{$border_style};
+      > * {
+        //float: left;
+        //line-height: #{$cs_title_height}px;
+        vertical-align: middle
+      }
+      .icon {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+        margin-top: 10px;
+        object-fit: cover;
+      }
+      .name-container {
+        display: inline-block;
+        text-align: left;
+        vertical-align: inherit;
+        font-weight: 100;
+        .name {
+          color: #ffffff;
+          margin-bottom: 3px;
+          text-indent: 10px;
+        }
+        .sub_name {
+          color: #d2d2d2;
+          text-indent: 10px;
+          font-size: 0.8rem;
+        }
+      }
+      hr {
+        background-image: linear-gradient(90deg, transparent, rgb(80, 181, 145), transparent);
+        border: 0;
+        height: 1px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      .description {
+        color: #a2a2a2;
+        font-size: 10px;
+      }
+      &:after {
+        content: '';
+        display: block;
+        clear: both;
+      }
+    }
+    .msgs_container {
+      background-color: #353b4c;
+      height: calc(#{$room_hieght} - #{$cs_title_height + $bottom_height}px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 5px 10px;
+      .msg {
+        padding: 8px 12px 9px;
+        border-radius: 8px;
+        clear: both;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 100;
+        &.self {
+          background: #3d4558;
+          color: #6c7ba9;
+          float: right;
+        }
+        &.other {
+          color: white;
+          float: left;
+          background: -webkit-linear-gradient(left, rgb(80, 181, 145), #65d890); /* For Safari 5.1 to 6.0 */
+          background: -o-linear-gradient(right, rgb(80, 181, 145), #65d890); /* For Opera 11.1 to 12.0 */
+          background: -moz-linear-gradient(right, rgb(80, 181, 145), #65d890); /* For Firefox 3.6 to 15 */
+          background: linear-gradient(to right, rgb(80, 181, 145), #65d890); /* Standard syntax (must be last) */
+        }
+      }
+    }
+    .send_msg_area {
+      background-color: #ffffff;
+      height: #{$bottom_height}px;
+      padding: 2px 6px 2px 10px;
+      border-top: $border_style;
+      box-sizing: border-box;
+      font-size: 1rem;
+      input {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        font-size: 14px;
+      }
+    }
+  }
+}
+

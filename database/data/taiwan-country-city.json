@@ -1,0 +1,84 @@
+[
+{
+  "country_name" : "tw",
+  "city_name"    : "Changhua_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Chiayi_City"
+}, 
+{
+  "country_name" : "tw",
+  "city_name"    : "Chiayi_County"
+},  
+
+{
+  "country_name" : "tw",
+  "city_name"    : "Hsinchu_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Hsinchu_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Hualien_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Kinmen_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Kaohsiung_City"
+},
+{
+  
+  "country_name" : "tw",
+  "city_name"    : "Keelung_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Miaoli_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Newtaipei_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Penghu_County"
+}, 
+{
+  "country_name" : "tw",
+  "city_name"    : "Pingtung_County"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Taichung_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Tainan_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Taoyuan_City"
+},
+{
+  "country_name" : "tw",
+  "city_name"    : "Taipei_City"
+},
+{ 
+  "country_name" : "tw",
+  "city_name"    : "Taitung_County"
+},      
+{
+  "country_name" : "tw",
+  "city_name"    : "Yilan_County"
+},              
+{
+  "country_name" : "tw",
+  "city_name"    : "Yunlin_County"
+}
+]
