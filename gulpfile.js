@@ -43,7 +43,7 @@ elixir(mix => {
         .copy(path.masonryLayout,'public/js/masonryLayout.js')
    .copy(path.masonryLayoutPkgd,'public/js/masonryLayoutPkgd.js')
    .webpack('app.js');
-    mix.webpack(['resources/assets/js/employee.js'], 'public/js/vue');
+    //mix.webpack(['resources/assets/js/employee.js'], 'public/js/vue');
     mix.sass([
         'userInterface',
         'TripActivityCard/main.scss'
