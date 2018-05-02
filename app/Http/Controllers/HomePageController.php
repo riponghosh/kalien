@@ -22,6 +22,7 @@ class HomePageController extends Controller
         }catch (Exception $e){
 
         }
+
         /*客服*/
         $service_room = null;
         /*group activity*/

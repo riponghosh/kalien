@@ -1,5 +1,5 @@
 @inject('MediaPresenter','App\Presenters\MediaPresenter')
-@extends('layouts.app')
+@@extends('layouts.app')
 @section('header')
     @if(!BrowserDetect::isMobile())
     <header id="hpgy-header">
