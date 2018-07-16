@@ -2,25 +2,33 @@
 
 namespace App\Repositories\UserGroupActivity;
 
+use App\Repositories\BaseRepository;
 use Carbon\Carbon;
 use App\UserActivityTicketUserGpActivity;
 use App\UserGroupActivity\UserGpActivityApplicants;
 use App\UserGroupActivity\UserGroupActivity;
 use League\Flysystem\Exception;
 
-class UserGroupActivityRepo
+class UserGroupActivityRepo extends BaseRepository
 {
-    protected $model;
     protected $userActivityTicketUserGpActivity;
-    function __construct(UserGroupActivity $userGroupActivity, UserActivityTicketUserGpActivity $userActivityTicketUserGpActivity)
+    protected $participant;
+
+    function __construct(UserActivityTicketUserGpActivity $userActivityTicketUserGpActivity, UserGpActivityApplicants $userGpActivityApplicants)
     {
         $this->userActivityTicketUserGpActivity = $userActivityTicketUserGpActivity;
-        $this->model = $userGroupActivity;
+        $this->participant =  $userGpActivityApplicants;
+        parent::__construct();
 
     }
 
+    function model()
+    {
+        return new UserGroupActivity();
+    }
+
     function eager_load($model){
-        return $model->with('applicants');
+        return $model->with('applicants','trip_activity_ticket','trip_activity_ticket.Trip_activity');
     }
 
     public function create($host_id, $activity_ticket_id, $activity_title, $start_date, $start_time, $start_at, $duration, $duration_unit, $need_min_joiner_for_avl_gp, $limit_joiner = null, $has_pdt_stock){
@@ -91,7 +99,7 @@ class UserGroupActivityRepo
         if(isset($attr['limit_activities'])){
             $query = $query->limit($attr['limit_activities']);
         }else{
-            $query = $query->limit(5);
+            $query = $query->limit(15);
         }
         $query->latest();
         //--------------------
@@ -124,8 +132,8 @@ class UserGroupActivityRepo
         //--------------------
         //  限制只要已成團
         //--------------------
-        if(isset($attr['is_available_group_for_limit_gp_ticket']) && $attr['is_available_group_for_limit_gp_ticket'] == 1){
-            $query->where('is_available_group_for_limit_gp_ticket', 1);
+        if(isset($attr['is_achieved']) || isset($attr['is_available_group_for_limit_gp_ticket'])){
+            $query->whereNotNull('achieved_at');
         }
         //--------------------
         // 指定票券 or 多張票券
@@ -168,7 +176,7 @@ class UserGroupActivityRepo
 
         return $query;
     }
-    public function update($id,$data){
+    public function update_by_id($id,$data){
         $query =  $this->model->find($id);
         $query->update($data);
         return $query;
@@ -182,14 +190,15 @@ class UserGroupActivityRepo
 //    Participant
 //
 //------------------------------------------------------------------------------
-    public function create_participant($activity_id, $applicant_id, $apply_to_is_available_group_for_limit_gp_ticket = false){
+    public function find_participant($val, $type){
+        return UserGpActivityApplicants::with('Group_activity')->where($type, $val)->first();
+    }
+    public function create_participant($activity_id, $applicant_id, $data = array()){
         //----------------------------------------------------------------------
         // 新增參加者
         //----------------------------------------------------------------------
-        $data = [
-            'applicant_id' => $applicant_id,
-            'user_gp_activity_id' => $activity_id,
-        ];
+        $data['applicant_id'] = $applicant_id;
+        $data[ 'user_gp_activity_id'] = $activity_id;
         $sql1 = UserGpActivityApplicants::create($data);
         if(!$sql1) throw new Exception('失敗，會盡快處理問題。');
 
@@ -202,15 +211,19 @@ class UserGroupActivityRepo
 
         return true;
     }
-    public function update_participant($activity_id, $applicant_id, $data){
-        $get_applicants = UserGpActivityApplicants::where('user_gp_activity_id', $activity_id)
-            ->where('applicant_id', $applicant_id)->first();
-        if(!$get_applicants) throw new Exception();
 
-        if(!$get_applicants->update($data)) throw new Exception();
+    public function delete_participant_by_ticket_id($ticket_id, $gp_activity_id){
+        if(!$del = UserGpActivityApplicants::where('user_gp_activity_id', $gp_activity_id)->where('ticket_id', $ticket_id)->first()->delete()){
+            throw new Exception('失敗，會盡快處理問題。');
+        };
 
         return true;
+
     }
+    public function update_participant($id, $params){
+        return $this->participant->where('id', $id)->update($params);
+    }
+
 //------------------------------------------------------------------------------
 //
 //    user_activity_ticket_and_gp_activity_relation

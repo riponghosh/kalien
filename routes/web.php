@@ -15,6 +15,16 @@ define('VERSION','?v='.env('APP_VER'));
 |loginModalBlade
 ****/
 Route::group(['middleware' => ['locale_lan']],function(){
+
+// Route::get('/ticketMobileTest',function(){
+//     return view('mobiles.ticket');
+// });
+//Route::get('/telegram-updated-activity', 'TelegramBotController@updatedActivity');
+//Route::get('/telegram-send-message', 'TelegramBotController@storeMessage');
+Route::post('/telegram_webhook/'.env('TELEGRAM_WEB_HOOK_TOKEN'), 'TelegramBotController@getWebhookUpdates');
+//Route::get('/telegram-set-webhook','TelegramBotController@setWebHook');
+Route::get('/ProductMobileTest/{activity_uni_name}','TripActivityController@get_trip_activity_mobile');
+
 /*
 *  email confirm
 */
@@ -22,8 +32,15 @@ Route::get('/activation/{uni_name}/{activate_code}','ActivateAccountController@e
 /*
 *   Social Auth
 */
-Route::get('auth/facebook', 'Auth\SocialAccountController@redirectToProvider');
 Route::get('auth/facebook/callback', 'Auth\SocialAccountController@handleCallback');
+Route::get('auth/facebook/{isDirectPage?}', 'Auth\SocialAccountController@redirectToProvider');
+
+/*
+**   Facebook
+*/
+Route::post('facebook/messenger/auto_reply','FacebookMessengerController@auto_reply');
+Route::get('facebook/messenger/merchant/auto_reply','FacebookMessengerController@merchant_auto_reply');
+Route::post('facebook/messenger/merchant/auto_reply','FacebookMessengerController@merchant_auto_reply');
 /*
 **驗證是否登入
 */
@@ -35,8 +52,10 @@ Route::post('/authCheck', function (Request $request) {
         return response(array('status' => 'error'));
     }
 });
+/*Use Hash Ticket*/
+Route::get('/activity_ticket/use/{ticket_hash_id}','HashTicketController@use_ticket_by_hash');
 /*改變語系*/
-Route::get('changeLocaleLangauge/{language}','GobalController@change_web_language');
+Route::get('changeLocaleLanguage/{language}','GobalController@change_web_language');
 Route::get('changeCurrencyUnit/{unit}','GobalController@change_web_cur_unit');
 /*隱私頁面*/
 Route::get('privacyPolicy',function(){
@@ -48,7 +67,14 @@ Route::get('servicePolicy', function (){
 /*
 * Landing Page
 */
-Route::get('/', 'HomePageController@index');
+Route::group(['prefix' => '/'],function(){
+   if (BrowserDetect::isMobile()){
+       Route::get('/', 'HomePageController@index_mobile_v2');
+   }else{
+       Route::get('/', 'HomePageController@index');
+   }
+});
+//Route::get('/', 'HomePageController@index');
 /*
 * 活動頁面
 */
@@ -71,7 +97,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/my_ticket','UserProfileController@show_user_ticket_index');
     Route::post('/activity_ticket_incidental_coupon/use','ActivityTicketController@use_activity_ticket_incidental_coupon');
     Route::post('/activity_ticket_incidental_coupon/retrieve_by_self','ActivityTicketController@retrieve_activity_ticket_incidental_coupon_by_owner');
-    Route::post('activity_ticket/transfer_to_other_user', 'ActivityTicketController@transfer_ticket_to_other_user');
     /*Notification*/
     Route::get('/notifications/get_all','UserNotificationController@get_all_notifications');
     Route::post('/notifications/is_read','UserNotificationController@update_notification_to_read');

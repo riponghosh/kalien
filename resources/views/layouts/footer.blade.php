@@ -18,9 +18,9 @@
                 <div class="col-xs-4">
                     <h5 class="title">@lang('app.websiteLanguage')</h5>
                     <ul>
-                        <li><h5><a href="{{url('changeLocaleLangauge/en')}}" >English</a></h5></li>
-                        <li><h5><a href="{{url('changeLocaleLangauge/zh_tw')}}" >繁體中文</a></h5></li>
-                        <li><h5><a href="{{url('changeLocaleLangauge/jp')}}" >日本語</a></h5></li>
+                        <li><h5><a href="{{url('changeLocaleLanguage/en')}}" >English</a></h5></li>
+                        <li><h5><a href="{{url('changeLocaleLanguage/zh_tw')}}" >繁體中文</a></h5></li>
+                        <li><h5><a href="{{url('changeLocaleLanguage/jp')}}" >日本語</a></h5></li>
                     </ul>
                 </div>
                 <div class="col-xs-4">

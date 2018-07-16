@@ -19,6 +19,27 @@ var path = {
  */
 
 elixir(mix => {
+    mix.webpack([
+        'Vue/appDefault.js', 
+        'Vue/groupActivity.js',
+        'Vue/footer.js',
+    ],'public/js/mVue/groupActivity.js');
+    mix.webpack([
+        'Vue/appDefault.js', 
+        'Vue/homePage.js',
+        'Vue/footer.js',
+    ],'public/js/mVue/homePage.js'); 
+    mix.webpack([
+        'Vue/appDefault.js', 
+        'Vue/ticket.js',
+        'Vue/footer.js',
+    ],'public/js/mVue/ticket.js'); 
+    mix.webpack([
+        'Vue/appDefault.js', 
+        'Vue/product.js',
+        'Vue/footer.js',
+    ],'public/js/mVue/product.js'); //for mobile Vue
+    //above is mobile env
     mix.sass([
       'bootstrap.min.css',
       'app.scss',

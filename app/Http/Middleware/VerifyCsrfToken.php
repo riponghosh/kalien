@@ -12,6 +12,10 @@ class VerifyCsrfToken extends BaseVerifier
      * @var array
      */
     protected $except = [
-        '/api-merchant/*'
+        '/api-merchant/*',
+        '/api-employee/*',
+        'facebook/messenger/auto_reply',
+        'facebook/messenger/merchant/auto_reply',
+        '/telegram_webhook/*'
     ];
 }

@@ -3,6 +3,7 @@
 namespace App\Repositories\AcPayableContract;
 
 use App\AccountPayableContractRecord\AccountPayableContractRecord;
+use League\Flysystem\Exception;
 
 class AcPayableContractRecordRepo
 {
@@ -12,6 +13,7 @@ class AcPayableContractRecordRepo
     }
 
     function create($data){
-        return $this->model->create($data);
+        $create = $this->model->create($data);
+        return $create;
     }
 }

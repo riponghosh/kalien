@@ -96,4 +96,9 @@ function pneko_fee($amount, $pneko_fee_percentage, $amount_unit){
     $fee = $fee >= $minimum_pneko_fee ? $fee : $minimum_pneko_fee;
     return $fee;
 }
+
+function storageUrl($path){
+    if(empty($path)) return '';
+    return Storage::url($path);
+}
 ?>

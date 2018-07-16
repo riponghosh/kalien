@@ -14,10 +14,10 @@ class Receipt extends Model
 		return $this->hasOne('App\GuideServiceRequest','id', 'product_id');
 	}
 	public function trip_activity_ticket(){
-	    return $this->hasOne('App\TripActivityTicket','id','product_id');
+	    return $this->hasOne('App\Models\TripActivityTicket','id','product_id');
     }
     public function trip_activity(){
-	    return $this->trip_activity_ticket->hasOne('App\Product','id','trip_activity_id');
+	    return $this->trip_activity_ticket->hasOne('App\Models\Product','id','trip_activity_id');
     }
     public function gp_activity(){
         return $this->hasOne('App\UserGroupActivity\UserGroupActivity', 'gp_activity_id', 'relate_gp_activity_id');

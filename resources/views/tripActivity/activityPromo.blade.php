@@ -5,10 +5,10 @@
             {{$trip_activity['description']}}
         </div>
     @endif
-    @foreach($trip_activity['trip_img'] as $trip_activity_img)
+    @foreach($trip_activity['media'] as $trip_activity_img)
         @if(!$trip_activity_img['is_gallery_image'])
             <div class="trip-activity-intro-imgs m-b-25">
-                <img class="m-b-5" src="{{$MediaPresenter->img_path($trip_activity_img['media']['media_location_standard'])}}">
+                <img class="m-b-5" src="{{$trip_activity_img['url']}}">
                 <div class="desc">
                     {{$trip_activity_img['description_zh_tw']}}
                 </div>

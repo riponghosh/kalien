@@ -2,6 +2,8 @@
 namespace App\Presenters;
 use Illuminate\Support\Facades\File;
 use App\Json;
+use Illuminate\Support\Facades\Storage;
+
 class CountryPresenter
 {
 	/*國家iso資料*/
@@ -12,8 +14,8 @@ class CountryPresenter
 	function __construct(){
 		$country_iso = File::get("../database/data/country-iso-numeric.json");
 		$this->country_iso_data  = json_decode($country_iso, true);
-		$this->tw_city_data = json_decode(File::get("../database/data/taiwan-country-city.json"),true);
-        $this->jp_city_data = json_decode(File::get("../database/data/japan-country-city.json"),true);
+		$this->tw_city_data = json_decode(file_get_contents(base_path("/database/data/taiwan-country-city.json")),true);
+        $this->jp_city_data = json_decode(file_get_contents(base_path("database/data/japan-country-city.json")),true);
 	}
 	public function create_country_option($is_existed = null){
 		$group = null;

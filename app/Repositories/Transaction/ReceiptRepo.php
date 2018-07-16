@@ -4,20 +4,30 @@ namespace App\Repositories\Transaction;
 
 use App\CartReceipt;
 use App\Receipt;
+use App\Repositories\BaseRepository;
 
-class ReceiptRepo
+class ReceiptRepo extends BaseRepository
 {
     protected $model;
     protected $cartReceipt;
 
-    function __construct(Receipt $receipt, CartReceipt $cartReceipt)
+    function __construct(CartReceipt $cartReceipt)
     {
-        $this->model = $receipt;
         $this->cartReceipt = $cartReceipt;
+
+        parent::__construct();
     }
 
-    function get_by_user_id($user_id){
-        return $this->model->where('user_id', $user_id)->get();
+    function model()
+    {
+        return new Receipt();
+    }
+
+    function eagerLoad()
+    {
+        $this->model
+            ->with('guide_service_ticket')->with('guide_service_ticket.seller')
+            ->with('trip_activity_ticket')->with('trip_activity_ticket.trip_activity');
     }
 
     function delete_by_user_id($user_id){

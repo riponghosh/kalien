@@ -3,7 +3,7 @@
 @inject('UserPresenter','App\Presenters\UserPresenter')
 @inject('TripActivityPresenter','App\Presenters\TripActivityPresenter')
 @section('header')
-<div class="trip-activity-header" style="background-image: url({{$MediaPresenter->img_path($trip_activity['trip_gallery_pic'])}})">
+<div class="trip-activity-header" style="background-image: url({{$trip_activity['trip_gallery_pic']}})">
     <div class="trip-activity-header-bottom-overlay">
     </div>
     <div class="trip-activity-header-container">
@@ -95,7 +95,7 @@
         </section>
         <hr>
         @endif
-        @if(count($trip_activity['trip_img']) > 1)
+        @if(count($trip_activity['media']) > 1)
             @include('tripActivity.activityPromo')
             <hr>
         @endif

@@ -195,16 +195,6 @@ class TransactionService
 
 
 	}
-
-	public function get_reciept_by_user_id($user_id){
-		$query_get_reciept = $this->transactionRepository->get_receipt_by_user_id($user_id);
-		if(!$query_get_reciept['success']) return ['success' => false];
-		$user_services_tickets = (object)$query_get_reciept['user_services_tickets']->groupBy('guide_service_ticket.request_to_id');
-		$trip_activity_tickets = (object)$query_get_reciept['trip_activity_tickets'];
-		return ['success' => true, 'user_service_tickets' => $user_services_tickets, 'trip_activity_tickets' => $trip_activity_tickets];
-
-
-	}
 //------------------------------------------------------------------------------------
 //  data: [{prdorequest_id}]
 //------------------------------------------------------------------------------------
@@ -304,11 +294,11 @@ class TransactionService
 //  轉移成可用票券
 //  交易流程配對：     新增產品 ; 應收帳款=第三方支付成功(Invoice) ； ac_payable_contract(Seller)
 //------------------------------------------------------------------------------------
-    public function transfer_user_receipts_to_invoice_and_create_us_tickets($user_id, $third_party_request){
+    public function transfer_user_receipts_to_invoice_and_create_us_tickets($user_id, $payment_info, $receipt){
         //------------------------------------------------
         //  取出receipt
         //------------------------------------------------
-        $get_receipts = $this->receiptService->get_by_user_id($user_id)->groupBy('product_type');
+        $get_receipts = $receipt->groupBy('product_type');
         //------------------------------------------------
         //  檢查票券是否能購買
         //------------------------------------------------
@@ -316,7 +306,7 @@ class TransactionService
             foreach ($get_receipts[ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET] as $trip_activity_ticket){
                 $attr = array();
                 if(isset($trip_activity_ticket['gp_activity']['is_available_group_for_limit_gp_ticket']) && $trip_activity_ticket['gp_activity']['is_available_group_for_limit_gp_ticket'] == true){
-                    $attr['is_available_group_for_limit_gp_ticket'] = true;
+                    $attr['gp_activity_is_achieved'] = true;
                 }
                 $check = $this->tripActivityTicketService->get_allow_purchase_by_id($trip_activity_ticket['product_id'], $trip_activity_ticket['start_date'], $trip_activity_ticket['start_time'], $attr);
                 if(!$check){
@@ -328,7 +318,7 @@ class TransactionService
         //------------------------------------------------
         // 移除receipt,cart->新增invoice->新增user_ticket
         //------------------------------------------------
-        $transfer = $this->transactionRepository->delete_cart_and_receipts_by_rts_id_and_create_invoice_and_user_tickets_and_ac_payable_contract($user_id, $get_receipts, $third_party_request);
+        $transfer = $this->transactionRepository->delete_cart_and_receipts_by_rts_id_and_create_invoice_and_user_tickets_and_ac_payable_contract($user_id, $get_receipts, $payment_info);
         if(!$transfer['success']){
             $this->err_log->err('delete_cart_and_receipts_by_rts_id_and_create_invoice_and_user_tickets_and_ac_payable_contract fail',__CLASS__,__FUNCTION__);
             return ['success' => false];
@@ -342,13 +332,21 @@ class TransactionService
         //------------------------------------------------
         if(isset($transfer['gp_activity_and_joiners']) && count($transfer['gp_activity_and_joiners']) > 0){
             foreach ($transfer['gp_activity_and_joiners'] as $gp_activity_and_joiner){
-                if(isset($gp_activity_and_joiner['apply_to_is_available_group_for_limit_gp_ticket'])){
-                    $apply_to_is_available_group_for_limit_gp_ticket = $gp_activity_and_joiner['apply_to_is_available_group_for_limit_gp_ticket'];
+                if(isset($gp_activity_and_joiner['group_apply_to_achieved'])){
+                    $group_apply_to_achieved = $gp_activity_and_joiner['group_apply_to_achieved'];
                 }else{
-                    $apply_to_is_available_group_for_limit_gp_ticket = false;
+                    $group_apply_to_achieved = false;
                 }
                 // TODO  限制判斷事件觸發
-                $action = $this->userGroupActivityService->add_participant($gp_activity_and_joiner['gp_activity_id'],$user_id, $apply_to_is_available_group_for_limit_gp_ticket);
+                $action = $this->userGroupActivityService->add_participant(
+                    $gp_activity_and_joiner['gp_activity_id'],
+                    $user_id,
+                    $group_apply_to_achieved,
+                    [
+                        'ticket_id' => $gp_activity_and_joiner['ticket_id'],
+                        'ticket_type' => $gp_activity_and_joiner['ticket_type'],
+                        'pdt_ticket_id' => $gp_activity_and_joiner['pdt_ticket_id']
+                    ]);
                 if(!$action){
                     $this->err_log->err('join gp fail gp_activity_id: '.$gp_activity_and_joiner['gp_activity_id'],__CLASS__, __FUNCTION__);
                     return ['success' => false, 'msg' => isset($action['msg']) ? $action['msg'] : null];
@@ -359,7 +357,7 @@ class TransactionService
         // Finish
         //------------------------------------------------
 
-        return ['success' => true, 'invoice_id' => $transfer['invoice_id']];
+        return ['success' => true, 'invoice_id' => $transfer['invoice_id'], 'ticket_hash_ids' => $transfer['ticket_ids']];
     }
 //------------------------------------------------------------------------------------
 //  交易成功後，把tappay資料寫入inovice
@@ -420,7 +418,7 @@ class TransactionService
 //  用戶Pneko幣
 //--------------------------------------------------------------------
     public function charge_user_credit_by_employee($employee_id, $user_id, $charge_amount, $amount_unit,$desc = ''){
-        $record_id = $this->userCreditAcOperationRecordRepository->create_before_operated_record($user_id, $charge_amount, $amount_unit, $desc, 1);
+        $record_id = $this->userCreditAcOperationRecordRepository->create_before_operated_record($user_id, $charge_amount, $amount_unit, 1, $desc);
 
         if($charge_amount <= 0){
             $this->userCreditAcOperationRecordRepository->change_record_status_to_failed($record_id);

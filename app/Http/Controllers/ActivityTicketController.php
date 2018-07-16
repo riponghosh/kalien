@@ -39,24 +39,7 @@ class ActivityTicketController
 *
 *
 ----------------------------------------------------------*/
-//----------------------------------------------------------------------
-//  票劵轉移
-//----------------------------------------------------------------------
-    function transfer_ticket_to_other_user(Request $request){
-        if(!$request->transfer_to_uni_name || !$request->activity_ticket_id){
-            return ['success' => false];
-        }
-        DB::beginTransaction();
-        $action = $this->activityTicketService->transfer_activity_to_other_user(Auth::user()->id, $request->transfer_to_uni_name, $request->activity_ticket_id);
-        if(!$action['success']){
-            $msg = isset($action['msg']) ? $action['msg'] : null;
-            DB::rollback();
-            return ['success' => false, 'msg' => $msg];
-        }
-        DB::commit();
-        return ['success' => true];
 
-    }
 //----------------------------------------------------------
 // Incidental Coupon
 //----------------------------------------------------------

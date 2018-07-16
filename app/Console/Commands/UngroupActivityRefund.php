@@ -39,7 +39,7 @@ class UngroupActivityRefund extends Command
         $gp_activities = $this->userGroupActivityService->get_group_activities([
             'need_min_joiner_for_avl_gp' => true,
             'over_start_at' => true,
-            'is_available_group_for_limit_gp_ticket' => false
+            'is_achieved' => false
         ]);
         $gps_id = array_pluck($gp_activities, 'id');
         $log_info = array(

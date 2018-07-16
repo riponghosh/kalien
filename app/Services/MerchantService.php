@@ -87,6 +87,20 @@ class MerchantService
         return ['success' => true, 'data' => $query];
     }
 
+    public function increase_credit_account_by_balance_payable_contract($merchant_id, $amount, $amount_unit, $desc = ''){
+        $update_account = $this->repo->update_merchant_credit($amount, $amount_unit, 'increase', $merchant_id);
+
+        $record = $this->repo->create_credit_account_operate_record([
+            'merchant_id' => $merchant_id,
+            'amount' => $amount,
+            'amount_unit' => $amount_unit,
+            'd_c' => 1,
+            'action_code' => MerchantEnum::ACCOUNT_OPERATE_BALANCE_PAYABLE_CONTRACT,
+            'desc' => $desc
+        ]);
+
+        return $update_account;
+    }
     public function account_withdrawal($merchant_id, $amount, $amount_unit, $desc = ''){
         $update_account = $this->repo->update_merchant_credit($amount, $amount_unit, 'decrease', $merchant_id);
         $record = $this->repo->create_credit_account_operate_record([

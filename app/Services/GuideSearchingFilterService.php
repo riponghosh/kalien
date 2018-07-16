@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Storage;
 
 class GuideSearchingFilterService
 {
@@ -12,7 +13,7 @@ class GuideSearchingFilterService
 	public function __construct()
 	{ 
 		$tw_region_arr = [];
-		$tw_city_data = json_decode(File::get("../database/data/taiwan-country-city.json"),true);
+		$tw_city_data = json_decode(file_get_contents(base_path("database/data/taiwan-country-city.json")),true);
 		foreach ($tw_city_data as $value) {
 			array_push($tw_region_arr,$value{'city_name'});
 		}

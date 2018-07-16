@@ -2,9 +2,9 @@
 namespace App\Repositories;
 
 use App\Merchant\MerchantMember;
-use App\Product;
+use App\Models\Product;
 use App\UserActivityTicket\TicketRefunding;
-use App\TripActivityTicket;
+use App\Models\TripActivityTicket;
 use App\UserActivityTicket;
 use Carbon\Carbon;
 use App\UserTaTicketsIncidentalCoupon;
@@ -63,27 +63,15 @@ class UserTicketRepository
         return ['success' => true, 'data' => $user_activity_ticket];
     }
 
-    function transfer_activity_to_other_user($transfer_by_id, $transfer_to_id, $ticket_id){
-        $get_ticket = $this->userActivityTicket->where('ticket_id', $ticket_id)->where('owner_id', $transfer_by_id)->first();
-        if(!$get_ticket){
-            return ['success' => false, 'msg' => '找不到此票券'];
-        }
-        $ticket_uid = $get_ticket->id;
-        $transfer = $get_ticket->update([
-            'owner_id' => $transfer_to_id
-        ]);
-        if(!$transfer){
-            return ['success' => false, 'msg' => '轉移失敗'];
-        }
-
-        return ['success' => true,'ticket_uid' => $ticket_uid];
-    }
 //-------------------------------------------------------------------------------------------
 //  附屬票券
 //-------------------------------------------------------------------------------------------
     function get_ta_ticket_incidental_coupons_by_beneficiary_id($beneficiary_id){
         $query = $this->userTaTicketsIncidentalCoupon->with('User_activity_ticket')->where('confer_on_user_id', $beneficiary_id);
         //Condition
+        $query = $query->whereHas('User_activity_ticket',function ($q){
+            $q->whereDate('start_date','>=', date('y-m-d'));
+        });
         $query = $query->whereNull('used_at');
 
         $query = $query->get();

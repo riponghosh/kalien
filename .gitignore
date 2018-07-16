@@ -2,6 +2,7 @@
 /node_modules
 /public/storage
 /storage/debugbar
+/storage/envData
 /public/css/*
 !/public/css/fonts
 /public/js
@@ -15,6 +16,8 @@ dump.rdb
 Homestead.json
 Homestead.yaml
 .env
+.env.forDev
 .DS_Store
 *.sqlite
 !icon
+.vscode/launch.json

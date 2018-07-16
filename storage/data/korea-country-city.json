@@ -1,0 +1,70 @@
+[
+{
+	"country_name" : "kp",
+	"city_name" : "Seoul_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Busan_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Daegu_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Incheon_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Gwangju_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Daejeon_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Ulsan_city"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Gyeonggi_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Gangwon_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Chungbuk_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Chungnam_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Jeonbuk_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Jeonnam_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Gyeongbuk_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Gyeongnam_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Jeju_Province"
+},
+{
+	"country_name" : "kp",
+	"city_name" : "Sejong_City"
+}
+]

@@ -4,6 +4,7 @@ namespace App\Services\Transaction;
 use App\Enums\Pay2GoEnum;
 use App\Exceptions\Transaction\CreateTwGovReceiptFail;
 use App\Repositories\Transaction\TwGovReceiptRepo;
+use League\Flysystem\Exception;
 
 class TwGovReceiptService
 {

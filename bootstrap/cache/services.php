@@ -25,17 +25,19 @@
     21 => 'Illuminate\\View\\ViewServiceProvider',
     22 => 'Barryvdh\\Cors\\ServiceProvider',
     23 => 'Barryvdh\\Debugbar\\ServiceProvider',
-    24 => 'Collective\\Html\\HtmlServiceProvider',
-    25 => 'Mews\\Purifier\\PurifierServiceProvider',
-    26 => 'Collective\\Html\\HtmlServiceProvider',
-    27 => 'Mews\\Purifier\\PurifierServiceProvider',
-    28 => 'Tymon\\JWTAuth\\Providers\\JWTAuthServiceProvider',
-    29 => 'hisorange\\BrowserDetect\\Provider\\BrowserDetectService',
-    30 => 'Laravel\\Socialite\\SocialiteServiceProvider',
-    31 => 'App\\Providers\\AppServiceProvider',
-    32 => 'App\\Providers\\AuthServiceProvider',
-    33 => 'App\\Providers\\EventServiceProvider',
-    34 => 'App\\Providers\\RouteServiceProvider',
+    24 => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    25 => 'Collective\\Html\\HtmlServiceProvider',
+    26 => 'Mews\\Purifier\\PurifierServiceProvider',
+    27 => 'Collective\\Html\\HtmlServiceProvider',
+    28 => 'Mews\\Purifier\\PurifierServiceProvider',
+    29 => 'Tymon\\JWTAuth\\Providers\\JWTAuthServiceProvider',
+    30 => 'hisorange\\BrowserDetect\\Provider\\BrowserDetectService',
+    31 => 'Laravel\\Socialite\\SocialiteServiceProvider',
+    32 => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    33 => 'App\\Providers\\AppServiceProvider',
+    34 => 'App\\Providers\\AuthServiceProvider',
+    35 => 'App\\Providers\\EventServiceProvider',
+    36 => 'App\\Providers\\RouteServiceProvider',
   ),
   'eager' => 
   array (
@@ -155,6 +157,10 @@
     'translation.loader' => 'Illuminate\\Translation\\TranslationServiceProvider',
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
+    'telegram' => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    'telegram.bot' => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    'Telegram\\Bot\\BotsManager' => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    'Telegram\\Bot\\Api' => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
     'html' => 'Collective\\Html\\HtmlServiceProvider',
     'form' => 'Collective\\Html\\HtmlServiceProvider',
     'Collective\\Html\\HtmlBuilder' => 'Collective\\Html\\HtmlServiceProvider',
@@ -200,6 +206,9 @@
     array (
     ),
     'Illuminate\\Validation\\ValidationServiceProvider' => 
+    array (
+    ),
+    'Telegram\\Bot\\Laravel\\TelegramServiceProvider' => 
     array (
     ),
     'Collective\\Html\\HtmlServiceProvider' => 

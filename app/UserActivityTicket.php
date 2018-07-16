@@ -16,7 +16,11 @@ class UserActivityTicket extends Model
 
 
     function Trip_activity_ticket(){
-        return $this->hasOne('App\TripActivityTicket','id', 'trip_activity_ticket_id');
+        return $this->hasOne('App\Models\TripActivityTicket','id', 'trip_activity_ticket_id');
+    }
+
+    function owner(){
+        return $this->hasOne('App\User','id','owner_id');
     }
 
     public function user_ta_tickets_incidental_coupons(){
@@ -31,6 +35,9 @@ class UserActivityTicket extends Model
         return $this->hasOne('App\UserActivityTicket\TicketRefunding', 'user_activity_ticket_id', 'id');
     }
 
+    public function assignee(){
+        return $this->hasOne('App\User', 'id', 'authorized_to');
+    }
     public static function boot()
     {
         parent::boot();

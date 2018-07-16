@@ -1,10 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Formatter\UserActivityTicket\UserActivityTicketFormatter;
 use App\Repositories\ErrorLogRepository;
 use App\Repositories\TripAppointmentRepository;
 use App\Services\ChatRoomService;
 use App\Services\MediaService;
+use App\Services\Transaction\ReceiptService;
 use App\Services\TransactionService;
 use App\Services\TripService;
 use App\Services\UserActivityTicket\ActivityTicketService;
@@ -108,12 +110,16 @@ class UserProfileController extends Controller
         return view('/userProfile/userInterface/photos_gallery',compact('user','user_icon','album'));
 
 	}
-	public function show_payment(){
-		$receipt = $this->transactionService->get_reciept_by_user_id(Auth::user()->id);
-		if(!$receipt['success']) return abort(404);
-		$user_service_tickets = $receipt['user_service_tickets'];
-        $trip_activity_tickets = $receipt['trip_activity_tickets'];
-		return view('/payment',compact('user_service_tickets','trip_activity_tickets'));
+	public function show_payment(ReceiptService $receiptService){
+        $receipt = $receiptService->get_by_user_id(Auth::user()->id);
+        $collection = collect($receipt);
+        $grouped = $collection->groupBy('product_type')->toArray();
+        if($user_service_tickets = isset($grouped["1"]) ? $grouped["1"] : null){
+            $user_service_tickets->groupBy('guide_service_ticket.request_to_id');
+		};
+        $receipt_trip_activity_tickets = isset($grouped["2"]) ? $grouped["2"] : null;
+
+        return view('/payment',compact('user_service_tickets','receipt_trip_activity_tickets'));
 	}
 	public function show_user_booking_request(){
 		$user = $this->UserProfileRepository->get_current_user();
@@ -625,15 +631,22 @@ class UserProfileController extends Controller
 //------------------------------------------------------------------------------------------------------
 //   User Ticket
 //------------------------------------------------------------------------------------------------------
-	public function show_user_ticket_index(ActivityTicketService $activityTicketService){
+	public function show_user_ticket_index(ActivityTicketService $activityTicketService, UserActivityTicketFormatter $userActivityTicketFormatter){
 		$user_activity_tickets = $activityTicketService->get_all([
 			'owner_id' => Auth::user()->id,
-			'get_available_status' => true
-		]);
+			['end_date', '>=', Carbon::now('Asia/Taipei')->subDays(3)->toDateTimeString(), 'Date']
+		],[			'get_available_status' => true
+        ]);
+
+		$activity_ticket_collection = collect($user_activity_tickets)->map(function ($activity_ticket) use ($userActivityTicketFormatter){
+			return $userActivityTicketFormatter->dataFormat($activity_ticket);
+		});
+        $user_activity_tickets = $activity_ticket_collection->toArray();
+
 		$beneficiary_incidental_tickets = $this->userService->get_beneficiary_incidental_tickets(Auth::user()->id);
         $beneficiary_incidental_tickets_is_used = $this->userService->get_beneficiary_incidental_tickets_is_used(Auth::user()->id, 3);
 
-		return view('/userTicket/main', compact('user_activity_tickets','beneficiary_incidental_tickets', 'beneficiary_incidental_tickets_is_used'));
+		return view('mobiles.ticket', compact('user_activity_tickets','beneficiary_incidental_tickets', 'beneficiary_incidental_tickets_is_used'));
 	}
 	/*****************************************************
 	**validator

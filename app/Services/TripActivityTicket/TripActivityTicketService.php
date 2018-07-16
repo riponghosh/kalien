@@ -2,9 +2,11 @@
 
 namespace App\Services\TripActivityTicket;
 
+use App\Media;
+use App\Models\TripActivityTicket\GpBuyingStatus;
 use App\Repositories\TripActivity\TripActivityRepo;
 use App\Repositories\TripActivityTicket\TripActivityTicketRepo;
-use App\TripActivityTicket;
+use App\Models\TripActivityTicket;
 use App\UserGroupActivity\UserGroupActivity;
 use League\Flysystem\Exception;
 use Carbon\Carbon;
@@ -13,14 +15,16 @@ class TripActivityTicketService
 {
     protected $repo;
     protected $tripActivityRepo;
-    function __construct(TripActivityTicketRepo $tripActivityTicketRepo, TripActivityRepo $tripActivityRepo)
+    protected $gpBuyingStatusModel;
+    function __construct(TripActivityTicketRepo $tripActivityTicketRepo, TripActivityRepo $tripActivityRepo, GpBuyingStatus $gpBuyingStatusModel)
     {
+        $this->gpBuyingStatusModel = $gpBuyingStatusModel;
         $this->tripActivityRepo = $tripActivityRepo;
         $this->repo = $tripActivityTicketRepo;
     }
 
     function get_by_id($id){
-        $ticket = $this->repo->first($id);
+        $ticket = $this->repo->findBy($id);
         $ticket = $this->helper_is_available($ticket);
 
         return $ticket;
@@ -89,6 +93,62 @@ class TripActivityTicketService
 
         return  $time_ranges;
     }
+
+    function save_gp_buying_status_img($gp_buying_status_id, $img_url, $img_format, $user_id = null){
+        $gp_buying_status =  $this->gpBuyingStatusModel->find($gp_buying_status_id);
+        $media = new Media();
+        if(!empty($user_id))$media->media_author = $user_id;
+        $media->media_format = $img_format;
+        $media->media_location_standard = $img_url;
+        return $gp_buying_status->media()->save($media);
+    }
+//------------------------------------------------------------------------
+//
+//   Disable sale date and week
+//   role type = 1: employee 2: merchant
+//------------------------------------------------------------------------
+    function add_disable_dates($role_type, $role_id, $trip_activity_ticket_id, $disable_dates = array()){
+        if(!in_array($role_type, [1,2], true)) throw new Exception();
+        $trip_activity_ticket = $this->repo->first($trip_activity_ticket_id);
+        if(!$trip_activity_ticket) throw new Exception();
+
+        if($role_type == 2){
+            if($trip_activity_ticket->Trip_activity->merchant_id != $role_id) throw new Exception('沒有修改權。');
+        }
+        //過濾已存在的日子
+        foreach ($trip_activity_ticket->disable_dates as $existed_disable_date) {
+            if(in_array($existed_disable_date->date,$disable_dates)){
+                unset($disable_dates[array_search($existed_disable_date->date, $disable_dates)]);
+            }
+        }
+        //create data
+        $insert_data = array();
+        foreach ($disable_dates as $disable_date){
+            $insert_data[] = ['date' => $disable_date];
+        }
+        $create = $trip_activity_ticket->disable_dates()->createMany($insert_data);
+        if(!$create) throw new Exception('新增失敗。');
+        return true;
+    }
+
+    function delete_disable_dates($role_type, $role_id, $trip_activity_ticket_id, $disable_dates = array()){
+        if(!in_array($role_type, [1,2], true)) throw new Exception();
+        $trip_activity_ticket = $this->repo->first($trip_activity_ticket_id);
+        if(!$trip_activity_ticket) throw new Exception();
+
+        if($role_type == 2){
+            if($trip_activity_ticket->Trip_activity->merchant_id != $role_id) throw new Exception('沒有修改權。');
+        }
+        //尋找日子是否存在
+        $exist_disable_dates = array_pluck($trip_activity_ticket->disable_dates, 'date');
+        foreach ($disable_dates as $disable_date){
+            if(!in_array($disable_date,$exist_disable_dates)) throw new Exception("日子不存在。");
+        }
+        $delete = $trip_activity_ticket->disable_dates()->whereIn('date', $disable_dates)->delete();
+        if(!$delete) throw new Exception('失敗。');
+        return true;
+    }
+
 //------------------------------------------------------------------------
 //
 //   Helpers
@@ -118,9 +178,9 @@ class TripActivityTicketService
         };
         //----------------------------------------
         //  #2 Time range
-        //  如有 $attr['is_available_group_for_limit_gp_ticket']，代表此團是已成團，加入此團無需檢查是否有時間重疊問題。
+        //  如有 $attr['gp_activity_is_achieved']，代表此團是已成團，加入此團無需檢查是否有時間重疊問題。
         //----------------------------------------
-        if(!$trip_activity_ticket->has_time_ranges == 0 && !isset($attr['is_available_group_for_limit_gp_ticket'])){
+        if(!$trip_activity_ticket->has_time_ranges == 0 && !isset($attr['is_available_group_for_limit_gp_ticket']) &&  !isset($attr['gp_activity_is_achieved'])){
             if($start_time == null){
                 throw new Exception('請提供場次。');
             }else{
@@ -175,7 +235,7 @@ class TripActivityTicketService
             'disable_weeks' => array_pluck($trip_activity_ticket->disable_weeks,'week'),
             'disable_dates' => array_pluck($trip_activity_ticket->disable_dates,'date'),
             'start_date' => Carbon::now()->toDateString(),
-            'end_date' => Carbon::now()->addDays(35)->toDateString()
+            'end_date' => Carbon::now()->addDays(env('MAX_PDT_END_SOLD_DATE', 35))->toDateString()
         ];
     }
     //------------------------------------------------------------------
@@ -220,7 +280,7 @@ class TripActivityTicketService
             ->whereIn('activity_ticket_id', $all_trip_activity_tickets_id)
             ->where('start_date', $start_date);
         /*需有成團認證*/
-        $all_group_activities = $all_group_activities->where('is_available_group_for_limit_gp_ticket', true);
+        $all_group_activities = $all_group_activities->whereNotNull('achieved_at');
         $all_group_activities = $all_group_activities->get();
         /*刪除人數不足團*/
         if($trip_activity_ticket['min_participant_for_gp_activity'] != null){

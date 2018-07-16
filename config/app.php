@@ -170,6 +170,7 @@ return [
          */
         hisorange\BrowserDetect\Provider\BrowserDetectService::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
+        Telegram\Bot\Laravel\TelegramServiceProvider::class,
         //
 
         /*
@@ -235,7 +236,8 @@ return [
 		'Purifier' => Mews\Purifier\Facades\Purifier::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
-        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class
+        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+        'Telegram' => Telegram\Bot\Laravel\Facades\Telegram::class
     ],
 
 ];

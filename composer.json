@@ -15,11 +15,12 @@
         "hisorange/browser-detect": "2.*",
         "guzzlehttp/ringphp": "~1.0",
         "guzzlehttp/guzzle": "~6.0",
-        "laravel/socialite": "v3.0.4",
+        "laravel/socialite": "^3.0.4",
         "embed/embed": "^3.2",
         "mews/purifier": "^2.0",
         "tymon/jwt-auth": "0.5.*",
-        "barryvdh/laravel-cors": "^0.11.0"
+        "barryvdh/laravel-cors": "^0.11.0",
+        "irazasyed/telegram-bot-sdk": "^3.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

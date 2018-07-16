@@ -40,29 +40,6 @@ class ActivityTicketService
 
         return ['success' => true, 'ticket' => $get_ticket['data']];
     }
-
-    function transfer_activity_to_other_user($owner_id, $transfer_to_uni_name, $ticket_id){
-        $transfer_to_user_id = $this->userService->get_user_id_by_uni_name($transfer_to_uni_name);
-        if(!$transfer_to_user_id){
-            return ['success' => false, 'msg' => '此用戶不存在。'];
-        }
-        $transfer = $this->userTicketRepository->transfer_activity_to_other_user($owner_id, $transfer_to_user_id, $ticket_id);
-
-        if(!$transfer['success']){
-            $msg = isset($transfer['msg']) ? $transfer['msg'] : '失敗';
-            return ['success' => false, 'msg' => $msg];
-        }
-        //-----------------------------------------------------------------
-        //  參加者角色轉移
-        //-----------------------------------------------------------------
-        $change_participant = $this->userGroupActivityService->change_participants_in_gp_activity_if_has_relate_ticket($owner_id, $transfer_to_user_id, $transfer['ticket_uid']);
-        if(!$change_participant){
-            $msg = '失敗';
-            return ['success' => false, 'msg' => $msg];
-        }
-        $this->activityTicketTransferRecordRepository->create_record($owner_id, $transfer_to_user_id, $transfer['ticket_uid']);
-        return ['success' => true];
-    }
 //-----------------------------------------------------------------------
 //  User Incidental Ticket 操作
 //-----------------------------------------------------------------------

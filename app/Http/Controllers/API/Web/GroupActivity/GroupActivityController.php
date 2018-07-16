@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers\API\Web\GroupActivity;
 
+use App\Enums\ProductTicketTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionService;
+use App\Services\UserActivityTicket\ActivityTicketService;
 use App\Services\UserGroupActivityService;
 use Auth;
 use DB;
@@ -60,8 +62,8 @@ class GroupActivityController extends Controller
             'relate_gp_activity_id' => $request['gp_activity_id'],
             'qty' => $ticket_qty
         ];
-        if($get_activity_info['is_available_group_for_limit_gp_ticket']){
-            $trip_activity_data['is_available_group_for_limit_gp_ticket'] = true;
+        if($get_activity_info['achieved_at']){
+            $trip_activity_data['gp_activity_is_achieved'] = true;
         }
         array_push($receipt_data['trip_activity_ticket'],$trip_activity_data);
         $create_receipt = $this->transactionService->create_receipt(Auth::user()->id, $receipt_data);
@@ -72,4 +74,31 @@ class GroupActivityController extends Controller
         DB::commit();
         return $this->apiFormatter->success($this->apiModel);
     }
+
+    function change_participant_by_ticket_authorized(ActivityTicketService $userActivityTicketService, $gp_activity_id){
+        $request = request()->input();
+        if(!isset($request['ticket_id'])) throw new Exception('失敗。');
+        if(!isset($request['new_participant'])) throw new Exception('失敗。');
+        DB::beginTransaction();
+        /*Get Ticket*/
+        $user_ticket = $userActivityTicketService->get($request['ticket_id'], 'ticket_id');
+        if($user_ticket->owner_id != Auth::user()->id) throw new Exception('沒有此票券擁有權');
+        /*授權*/
+        if(!$userActivityTicketService->authorize_to(Auth::user()->id, $request['new_participant'], $user_ticket['id'])) throw new Exception('授權失敗。');
+        /*Get group and participant*/
+        if(!$gp_activity = $this->userGroupActivityService->get_by_gp_activity_id($gp_activity_id)) throw new Exception('此團不存在。');
+        /*check ticket exist*/
+        if(!$change_participant = $this->userGroupActivityService->change_participant(
+            $gp_activity_id,
+            $request['new_participant'], [
+            'ticket_id' => $user_ticket['id'],
+            'ticket_type' => ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET
+        ])) throw new Exception('轉移參加者失敗。');
+        /*check ticket authorized and change it*/
+
+        /*change group participants*/
+        DB::commit();
+        return $this->apiFormatter->success($this->apiModel);
+    }
+
 }

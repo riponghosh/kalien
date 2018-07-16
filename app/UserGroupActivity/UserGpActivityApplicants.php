@@ -16,5 +16,9 @@ class UserGpActivityApplicants extends Model
     public function user(){
         return $this->hasOne('App\User', 'id', 'applicant_id');
     }
+
+    public function Group_activity(){
+        return $this->belongsTo('App\UserGroupActivity\UserGroupActivity','user_gp_activity_id', 'id');
+    }
 }
 ?>

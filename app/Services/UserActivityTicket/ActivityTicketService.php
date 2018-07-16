@@ -3,6 +3,7 @@
 namespace App\Services\UserActivityTicket;
 
 use App\EmailAPI;
+use App\Enums\AcPayableContract\AcPayableContractPaymentMethodsEnum;
 use App\Repositories\UserActivityTicket\IncidentalCouponRepo;
 use App\Repositories\UserActivityTicket\UserActivityTicketRepo;
 use App\Repositories\UserTicketRepository;
@@ -12,6 +13,7 @@ use App\Services\Transaction\Pay2GoTwGovService;
 use App\Services\Transaction\TapPayService;
 use App\Services\Transaction\TwGovReceiptService;
 use App\Services\TripActivityTicket\TripActivityTicketService;
+use App\Services\User\CreditAccountService;
 use App\Services\UserGroupActivityService;
 use App\TransactionRelation;
 use Carbon\Carbon;
@@ -25,13 +27,14 @@ class ActivityTicketService
     protected $emailAPI;
     protected $invoiceService;
     protected $pay2GoTwGovService;
+    protected $userCreditAccountService;
     protected $userGroupActivityService;
     protected $tapPayService;
     protected $tripActivityTicketService;
     protected $twGovReceiptService;
     protected $userTicketRepository; //TODO 整合
 
-    function __construct(EmailAPI $emailAPI, UserActivityTicketRepo $userActivityTicketRepo, TripActivityTicketService $tripActivityTicketService, IncidentalCouponRepo $incidentalCouponRepo, InvoiceService $invoiceService, AcPayableContractService $acPayableContractService, UserGroupActivityService $userGroupActivityService, TapPayService $tapPayService, TwGovReceiptService $twGovReceiptService, Pay2GoTwGovService $pay2GoTwGovService, UserTicketRepository $userTicketRepository)
+    function __construct(CreditAccountService $userCreditAccountService ,EmailAPI $emailAPI, UserActivityTicketRepo $userActivityTicketRepo, TripActivityTicketService $tripActivityTicketService, IncidentalCouponRepo $incidentalCouponRepo, InvoiceService $invoiceService, AcPayableContractService $acPayableContractService, UserGroupActivityService $userGroupActivityService, TapPayService $tapPayService, TwGovReceiptService $twGovReceiptService, Pay2GoTwGovService $pay2GoTwGovService, UserTicketRepository $userTicketRepository)
     {
         $this->repo = $userActivityTicketRepo;
         $this->incidentalCouponRepo = $incidentalCouponRepo;
@@ -43,6 +46,7 @@ class ActivityTicketService
         $this->tripActivityTicketService = $tripActivityTicketService;
         $this->twGovReceiptService = $twGovReceiptService;
         $this->userGroupActivityService = $userGroupActivityService;
+        $this->userCreditAccountService = $userCreditAccountService;
         $this->userTicketRepository = $userTicketRepository;
     }
     function create($data = array()){
@@ -89,8 +93,8 @@ class ActivityTicketService
      * owner_id
      * get_available_status
      */
-    function get_all($attr = array()){
-        $tickets = $this->repo->get($attr);
+    function get_all($cond = array(), $attr){
+        $tickets = $this->repo->whereCond($cond)->get();
 
         foreach ($tickets as $ticket){
             if(isset($attr['get_available_status'])){
@@ -102,7 +106,7 @@ class ActivityTicketService
     }
 
     function get($ticket_id, $type = 'id'){
-        $ticket = $this->repo->first_by_ticket_id($ticket_id);
+        $ticket = $this->repo->findBy($ticket_id, $type);
         if(!$ticket) throw new Exception('失敗', $ticket['status']);
         if(!$this->helper_ticket_is_available($ticket)) throw new Exception('已失效。');
 
@@ -110,12 +114,17 @@ class ActivityTicketService
     }
 
     function use_ticket($user_id, $ticket_id){
-        $ticket = $this->get($ticket_id);
+        $ticket = $this->get($ticket_id, 'ticket_id');
         if($ticket->owner_id != $user_id){
             throw new Exception('沒有此票券擁有權');
         }
-        $this->helper_ticket_in_use_day($ticket);
+        if(!$this->helper_ticket_in_use_day($ticket)){
+            throw new Exception('不在有效使用期間。');
+        };
 
+        if(!$ticket->update(['used_at' => date('y-m-d H:i:s')])){
+            throw new Exception('使用失敗。');
+        };
         return $ticket;
     }
 
@@ -124,6 +133,20 @@ class ActivityTicketService
         //-------------------------------
         //檢查是否團體活動票
         //-------------------------------
+        //票券有用於團體活動
+        if($participant = $ticket_is_used_in_group_check  = $this->userGroupActivityService->get_participant_by_ticket_id($user_activity_ticket['id'])){
+            //-------------------------------
+            //  是團購票且未成團的話不使用refund rule
+            //-------------------------------
+            if(!$participant->Group_activity['is_achieved']){
+                $use_refund_rule = false;
+            }
+            //-----------------------------
+            //  退票方式：by ticket id and type
+            //-----------------------------
+            $quit_group = $this->userGroupActivityService->delete_participant_by_ticket_id($user_activity_ticket['id'], $participant->Group_activity['id']);
+        }
+        /*
         $get_and_delete_activity_ticket = $this->userGroupActivityService->get_and_delete_if_exist_user_activity_ticket_and_gp_activity_relation($user_activity_ticket['id']);
         if($get_and_delete_activity_ticket['is_gp_activity_ticket']){
             //-------------------------------
@@ -132,11 +155,16 @@ class ActivityTicketService
             if(!$get_and_delete_activity_ticket['data']['user_group_activity']['is_achieved']){
                 $use_refund_rule = false;
             }
+            //-----------------------------
+            //  退票方式：
+            //  1.by joiner id and ticket hash ; 2.by ticket id and type
+            //-----------------------------
             $quit_if_is_gp_activity = $this->userGroupActivityService->delete_participant($get_and_delete_activity_ticket['data']['user_gp_activity_id'], $user_activity_ticket['owner_id']);
             if(!$quit_if_is_gp_activity){
                 throw new Exception('失敗。');
             }
         }
+        */
         //-------------------------------
         //  TransactionRelation 連結AcPayableContract, Invoice
         //-------------------------------
@@ -149,29 +177,44 @@ class ActivityTicketService
         //-------------------------------
         //  Payable Contract
         //-------------------------------
-        $contract_refund = $this->acPayableContractService->refund($transaction_relation->account_payable_contract_id, $user_activity_ticket['owner_id'], $use_refund_rule);
+        $contract_refunds = $this->acPayableContractService->refund($transaction_relation->account_payable_contract_id, $user_activity_ticket['owner_id'], $use_refund_rule);
         //-------------------------------
         //  Invoice商品移除
         //-------------------------------
         $invoice_item = $this->invoiceService->get_item_by_invoice_item_id($transaction_relation->invoice_item_id);
         $delete_invoice_item = $this->invoiceService->del_item($transaction_relation->invoice_item_id);
         //-------------------------------
-        //退款
+        //
+        //  退款
+        //
         //-------------------------------
-        $create_refunding_process = false; //如果退款失敗，會新增退款處理
-        $tap_pay_req_params = [
-            'partner_key' => env('TAP_PAY_PARTNER_KEY'),
-            'rec_trade_id' => $invoice_item->invoice['refund_id_tappay']
-        ];
-        $tap_pay_refund = $this->tapPayService->refund((integer)cur_convert($contract_refund['refund_amt'], $contract_refund['refund_amt_unit'],'TWD'), $tap_pay_req_params);
-        if(!$tap_pay_refund['success']){
-            $tap_pay_info = $tap_pay_refund['info'];
-            $create_refunding_process = true;
+        $create_credit_card_refunding_process = false; //如果退款失敗，會新增退款處理
+        foreach ($contract_refunds as $refund_method){
+            if($refund_method['refund_method_type'] == AcPayableContractPaymentMethodsEnum::CREDIT_CARD){
+                $tap_pay_req_params = [
+                    'partner_key' => env('TAP_PAY_PARTNER_KEY'),
+                    'rec_trade_id' => $invoice_item->invoice['refund_id_tappay']
+                ];
+                $tap_pay_refund = $this->tapPayService->refund((integer)cur_convert($refund_method['refund_amt'], $refund_method['refund_amt_unit'],'TWD'), $tap_pay_req_params);
+                if(!$tap_pay_refund['success']){
+                    $tap_pay_info = $tap_pay_refund['info'];
+                    $create_credit_card_refunding_process = true;
+                }
+            }elseif($refund_method['refund_method_type'] == AcPayableContractPaymentMethodsEnum::USER_CREDIT){
+                $this->userCreditAccountService->increase_credit(
+                    $refund_method['refund_amt'],
+                    $refund_method['refund_amt_unit'],
+                    $user_activity_ticket['owner_id'],
+                    'ticket refund'
+                );
+            }else{
+                throw new Exception();
+            }
         }
         //-------------------------------
         // 判斷是否增加退款處理
         //-------------------------------
-        if($create_refunding_process){
+        if($create_credit_card_refunding_process){
             $this->emailAPI->refunded_fail_noti('pnekotw@gmail.com', $user_activity_ticket['id'], 'activity', date('Y-m-d H:i:s'), json_encode($tap_pay_info, true));
             $action = $this->create_ticket_refunding_process($user_activity_ticket['id'], $tap_pay_info);
         }
@@ -179,7 +222,7 @@ class ActivityTicketService
         //發票作廢
         //-------------------------------
         if(empty($invoice_item->invoice['tw_gov_receipt']['id']) && empty($invoice_item->invoice['tw_gov_receipt']['gov_receipt_number'])){
-            print_r('no record');
+            //TODO
         }else{
             $invoice_invaliding = $this->pay2GoTwGovService->invoice_invalid($invoice_item->invoice['tw_gov_receipt']['gov_receipt_number'],'退票');
             $record = $this->twGovReceiptService->add_pay2go_invaliding_response_data($invoice_item->invoice['tw_gov_receipt']['id'], $invoice_invaliding);
@@ -188,6 +231,7 @@ class ActivityTicketService
 
         return true;
     }
+
     function refund_by_owner($tic_id, $tic_owner){
         //-------------------------------
         //取得票券檢查票劵
@@ -235,7 +279,7 @@ class ActivityTicketService
         //-------------------------------
         $this->helper_ticket_allow_refund($user_activity_ticket);
         if(isset($attr['is_min_joiner_gp_and_not_avl'])){
-            if(!$user_activity_ticket->relate_gp_activity->user_group_activity->is_available_group_for_limit_gp_ticket){
+            if(empty($user_activity_ticket->relate_gp_activity->user_group_activity->achieved_at)){
                 throw new Exception('此票不是團票且未成團。');
             };
         }
@@ -256,19 +300,41 @@ class ActivityTicketService
     function delete_by_model($user_activity_ticket){
         return $this->repo->delete_by_model($user_activity_ticket);
     }
+
+    function authorize_to($owner_id, $authorize_to, $ticket_id){
+        if(!$ticket = $this->repo->findBy($ticket_id)) throw new Exception('查無此票券。');
+        if($ticket->owner_id != $owner_id) throw new Exception('您沒有此票券的擁有權。');
+        if(!$ticket->update([
+            'authorized_to' => $authorize_to
+        ])) throw new Exception('授權失敗');
+
+        return true;
+    }
 //--------------------------------------------------------------
 //
 //      Helpers
 //
 //--------------------------------------------------------------
-    function helper_ticket_in_use_day($user_activity_ticket){
+    function get_use_duration($user_activity_ticket){
         $tz = $user_activity_ticket['Trip_activity_ticket']['Trip_activity']['time_zone'];
-        $present_time = Carbon::now()->timezone($tz);
-        if(strtotime($user_activity_ticket->start_date) > strtotime($present_time->toDateString())){
-            throw new Exception('',1);
+        //start day is with tz, need refactor
+        $a = Carbon::createFromFormat('Y-m-d H:i:s', date('y-m-d H:i:s'));
+        $b = Carbon::createFromFormat('Y-m-d H:i:s', date('y-m-d H:i:s'), $tz);
+        $minus_tz = $a->diffInHours($b);
+        $present_time_from = Carbon::createFromFormat('Y-m-d H:i:s', $user_activity_ticket->start_date.' 00:00:00')->subHours($minus_tz);
+        $present_time_to = Carbon::createFromFormat('Y-m-d h:i:s', $user_activity_ticket->start_date.' 00:00:00', $tz)->addDay()->subHours($minus_tz)->addHours('12');
+        return ['from' => $present_time_from->toDateTimeString(),'to' => $present_time_to->toDateTimeString()];
+    }
+
+    function helper_ticket_in_use_day($user_activity_ticket){
+        $use_duration = $this->get_use_duration($user_activity_ticket);
+        if(strtotime(date('y-m-d H:i:s')) < strtotime($use_duration['from'])){
+            //throw new Exception($use_duration['from'],1);
+            return false;
         }
-        if(strtotime($user_activity_ticket->start_date) < strtotime($present_time->toDateString())){
-            throw new Exception('',2);
+        if(strtotime(date('y-m-d H:i:s')) > strtotime($use_duration['to'])){
+            return false;
+            //throw new Exception('',2);
         }
         return true;
     }
@@ -276,23 +342,11 @@ class ActivityTicketService
     function helper_ticket_is_available($user_activity_ticket){
         $result = [ 'status' => 'available', 'msg' => []];
         //---------------------------------------------------------------------------------------
-        // 日期檢查
-        //---------------------------------------------------------------------------------------
-        $tz = $user_activity_ticket['Trip_activity_ticket']['Trip_activity']['time_zone'];
-        $present_time = Carbon::now()->timezone($tz);
-        //TODO 非全日票增加start time
-        $ticket_expired_at_time = $user_activity_ticket['start_date'];
-
-        if(strtotime($present_time) > strtotime($ticket_expired_at_time.' '.'23:59')){
-            $result['status'] = 'unavailable';
-            array_push($result['msg'], 'expired');
-        }
-        //---------------------------------------------------------------------------------------
         // 團體票是否成團
         //---------------------------------------------------------------------------------------
         if(!empty($user_activity_ticket->relate_gp_activity)){
             $gp_activity = $user_activity_ticket->relate_gp_activity->user_group_activity;
-            if(!$gp_activity->is_available_group_for_limit_gp_ticket){
+            if(empty($gp_activity->achieved_at)){
                 $result['status'] = 'unavailable';
                 array_push($result['msg'], 'not_achieved');
             }

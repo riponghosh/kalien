@@ -4,7 +4,9 @@ $primary_pneko_red_color: #da2f67;
 $semantic_danger_color : #f12d64; /*danger*/
 $neu_border_color : rgba(0,0,0,0.3); /*border bottom*/
 $neu_dark_container_color : #353a4c;/*dark-container background*/
-
+$z-vue_modal : 99999;
+$z-group_activity_bottom_bar : 99998;
+$z-nav : 99997;
 html{
   font-size: 75%;
 }
@@ -396,6 +398,9 @@ img:visited{
 .m-b-15{
   margin-bottom: 15px;
 }
+.m-b-20{
+  margin-bottom: 20px;
+}
 .m-b-25{
   margin-bottom: 25px;
 }
@@ -473,13 +478,21 @@ main{
   padding-right: 5%;
 }
 #app-nav {
-
   &.is-visible {
     opacity: 1;
     -webkit-transform: translate(0,0);
     -webkit-transition: -webkit-transform .2s,background .3s,color .3s;
   }
 
+}
+.nav-fix{
+  z-index: #{$z-nav};
+}
+.vue_modal,.v--modal-overlay{
+  z-index: #{$z-vue_modal} !important;
+}
+.group_activity_bottom_bar{
+  z-index: #{$z-group_activity_bottom_bar};
 }
 /*
 ** Other
@@ -510,7 +523,7 @@ main{
 .nav-transparent-abs{
   background-color: rgba(0,0,0,0);
   position: absolute;
-  z-index: 1;
+  z-index: 100000;
   width: 100%;
 }
  #hpgy-header{

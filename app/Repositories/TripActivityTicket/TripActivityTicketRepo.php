@@ -2,28 +2,33 @@
 
 namespace App\Repositories\TripActivityTicket;
 
-use App\TripActivityTicket;
+use App\Repositories\BaseRepository;
+use App\Models\TripActivityTicket;
 
-class TripActivityTicketRepo
+class TripActivityTicketRepo extends BaseRepository
 {
-    protected $model;
 
-    function __construct(TripActivityTicket $tripActivityTicket)
+    function __construct()
     {
-        $this->model = $tripActivityTicket;
+
+        parent::__construct();
     }
 
+    function model(){
+        return new TripActivityTicket();
+    }
 
     function eager_load($model){
         return $model
             ->with('disable_dates')
+            ->with('gp_buying_status')
             ->with('Trip_activity');
     }
 
     function first($id){
         return $this
-            ->model
-            ->find($id);
+            ->model->where('id', $id)
+            ->first();
     }
 
     function get($attr = array()){

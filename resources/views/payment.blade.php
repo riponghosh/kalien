@@ -26,48 +26,52 @@
 </style>
 <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12" style="float: right"><!-- Product info-->
-        <?php $trip_activity_tickets_group_by_id = object_group_by($trip_activity_tickets,'trip_activity_tickets.id'); ?>
-        @foreach($trip_activity_tickets_group_by_id as $trip_activity_tickets)
-            @foreach($trip_activity_tickets as $ta_ticket)
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        {{$TripActivityPresenter->lan_convert($ta_ticket->trip_activity, 'title')}} - {{$TripActivityPresenter->lan_convert($ta_ticket->trip_activity, 'sub_title')}}
-                    </div>
-                    <div class="panel-body">
-                        <div class="row p-b-10">
-                            <div class="col-md-12">
-                                <span style="color: #9c9c9c">{{trans('payment.ItemDetail')}}</span>
-                                <div class="pull-right">
-                                    {{$TripActivityPresenter->lan_convert($ta_ticket->trip_activity_ticket,'name')}}
+        @if(!empty($receipt_trip_activity_tickets))
+        <?php $receipt_trip_activity_tickets_group_by_id = object_group_by($receipt_trip_activity_tickets,'trip_activity_ticket.id'); ?>
+            @foreach($receipt_trip_activity_tickets_group_by_id as $receipt_trip_activity_tickets)
+                @foreach($receipt_trip_activity_tickets as $receipt_ta_ticket)
+                    <?php $ta_ticket = $receipt_ta_ticket['trip_activity_ticket']; ?>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{$TripActivityPresenter->lan_convert($ta_ticket['trip_activity'], 'title')}} - {{$TripActivityPresenter->lan_convert($ta_ticket['trip_activity'], 'sub_title')}}
+                        </div>
+                        <div class="panel-body">
+                            <div class="row p-b-10">
+                                <div class="col-md-12">
+                                    <span style="color: #9c9c9c">{{trans('payment.ItemDetail')}}</span>
+                                    <div class="pull-right">
+                                        {{$TripActivityPresenter->lan_convert($ta_ticket,'name')}}
+                                    </div>
                                 </div>
-                            </div>
-                        </div><!--row-->
-                        <div class="row p-b-10">
-                            <div class="col-md-12">
-                                <span style="color: #9c9c9c">{{trans('payment.useDate')}}</span>
-                                <div class="pull-right">
-                                    {{$ta_ticket->start_date}}
+                            </div><!--row-->
+                            <div class="row p-b-10">
+                                <div class="col-md-12">
+                                    <span style="color: #9c9c9c">{{trans('payment.useDate')}}</span>
+                                    <div class="pull-right">
+                                        {{$receipt_ta_ticket['start_date']}}
+                                    </div>
                                 </div>
-                            </div>
-                        </div><!--row-->
-                        <div class="row p-b-10">
-                            <div class="col-md-12">
-                                <span style="color: #9c9c9c">{{trans('payment.Qty')}}</span>
-                                <div class="pull-right">
-                                    {{$ta_ticket->qty}}
+                            </div><!--row-->
+                            <div class="row p-b-10">
+                                <div class="col-md-12">
+                                    <span style="color: #9c9c9c">{{trans('payment.Qty')}}</span>
+                                    <div class="pull-right">
+                                        {{$receipt_ta_ticket['qty']}}
+                                    </div>
                                 </div>
-                            </div>
-                        </div><!--row-->
+                            </div><!--row-->
+                        </div>
+                        <div class="panel-footer">
+                            <span style="color: #9c9c9c">{{trans('payment.Total')}}</span>
+                            <?php $sub_total_price = cur_convert($ta_ticket['amount'],$ta_ticket['currency_unit']) * $receipt_ta_ticket['qty']?>
+                            <span class="pull-right">{{$show_cur_unit}}&nbsp;{{number_format($sub_total_price,1,'.','')}}</span>
+                            <?php $total_price += $sub_total_price; $sub_total_price = 0;?>
+                        </div>
                     </div>
-                    <div class="panel-footer">
-                        <span style="color: #9c9c9c">{{trans('payment.Total')}}</span>
-                        <?php $sub_total_price = cur_convert($ta_ticket->trip_activity_ticket->amount,$ta_ticket->trip_activity_ticket->currency_unit) * $ta_ticket->qty?>
-                        <span class="pull-right">{{$show_cur_unit}}&nbsp;{{number_format($sub_total_price,1,'.','')}}</span>
-                        <?php $total_price += $sub_total_price; $sub_total_price = 0;?>
-                    </div>
-                </div>
+                @endforeach
             @endforeach
-        @endforeach
+        @endif
+        @if(!empty($user_service_tickets))
         @foreach($user_service_tickets as $seller => $user_service_ticket)
             <?php $us_ticket_ser_types = object_group_by($user_service_ticket,'guide_service_ticket.service_type'); ?>
 
@@ -121,6 +125,7 @@
                 @endforeach
             @endforeach
         @endforeach
+        @endif
         <div class="panel">
             <div class="panel-body">
                 <p>
@@ -133,7 +138,7 @@
         </div>
     </div><!--Product info-->
     <div class="col-md-8 col-sm-12 col-xs-12" style="float: right">
-    @if(count($trip_activity_tickets) == 0 && count($user_service_tickets) == 0)
+    @if(count($receipt_trip_activity_tickets) == 0 && count($user_service_tickets) == 0)
         <div class="panel">
             <div class="panel-body text-center" style="height: 200px;display: table;width: 100%;">
                 <p class="h4" style="display: table-cell;vertical-align: middle">沒有訂購任何產品</p>

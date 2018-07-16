@@ -8,7 +8,7 @@ class TripActivityPresenter{
         $web_lan = Cookie::get('web_language');
         $lans = ['zh_tw', 'jp', 'en'];
 
-        if($data[$param.'_'.$web_lan] != null) return $data[$param.'_'.$web_lan];
+        if(isset($data[$param.'_'.$web_lan]) && $data[$param.'_'.$web_lan] != null) return $data[$param.'_'.$web_lan];
         foreach ($lans as $lan){
             if($data[$param.'_'.$lan] != null) return $data[$param.'_'.$lan];
         }

@@ -1,11 +1,11 @@
 @inject('MediaPresenter','App\Presenters\MediaPresenter')
-@@extends('layouts.app')
+@extends('layouts.app')
 @section('header')
-    @if(!BrowserDetect::isMobile())
+    @if(!BrowserDetect::isMobile()) 
     <header id="hpgy-header">
         <div class="slide_show_container">
             <div class="gallery_wrapper" data-slide="1">
-                <div class="container">
+                <div class="container" style="position: absolute;z-index: 1;">
                     <div class="row">
                         <div class="flex gallery_content" style="margin-top: 10%;padding: 0 10% 0 10%">
                             <div class="l-side" style="margin-top:5%;    -webkit-flex: 3;  /* Safari 6.1+ */-ms-flex: 3;  /* IE 10 */    flex: 3;">
@@ -14,19 +14,13 @@
                             </div>
                             <div class="r-side" style=" padding: 25px; max-width: 300px;  -webkit-flex: 2;  /* Safari 6.1+ */-ms-flex: 2;  /* IE 10 */    flex: 2;">
                                 <div class="body" >
-                                    <!--
-                                    <div>
-                                        <div class="userCircle" style="width: 100px;height: 100px; margin: auto;">
-                                            <img class="img-circle" style="border: 2px red solid;" src="{{Storage::url($gallery_activity->host->user_icon[0]->media->media_location_low)}}"/>
-                                        </div>
-                                        <div class="name" style="font-size: 18px; text-align: center">
-                                            {{$gallery_activity->host->name}}
-                                        </div>
-                                    </div>
-                                    -->
                                     <div style="padding-bottom: 15px;">
                                         <div class="userCircle d-inline-block m-r-15" style="width: 65px;height: 65px;">
-                                            <img class="img-circle" style="border: 2px #81cfb3 solid;" src="{{Storage::url($gallery_activity->host->user_icon[0]->media->media_location_low)}}"/>
+                                            <?php
+                                                $user_icon = optional(optional(optional(optional($gallery_activity->host)->user_icon)[0])->media)->media_location_low;
+                                                $user_icon_path = $user_icon == null ?  "img/icon/user_icon_bg.png" : Storage::url($user_icon);
+                                            ?>
+                                            <img class="img-circle" style="border: 2px #81cfb3 solid;" src="{{$user_icon_path}}"/>
                                         </div>
                                         <div class="name d-inline-block" style="font-size: 24px; vertical-align: middle">
                                             <span style="display: block;font-size:14px;color: #c1c1c1;">主辦人</span>
@@ -49,6 +43,7 @@
                         </div>
                     </div>
                 </div>
+                <div style="width:100%;background:rgba(0,0,0,0.5);height: 100%;position:absolute;z-index:0;top: 0;left: 0;"></div>
                 <img class="gallery_img" src="{{$MediaPresenter->img_path($gallery_activity->trip_activity->trip_activity_cover->media->media_location_standard)}}">
             </div>
             <!--

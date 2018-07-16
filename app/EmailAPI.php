@@ -72,6 +72,25 @@ class EmailAPI
         return($result);
     }
 
+    function send_e_ticket($email_address, $ticket_sub_title, $ticket_name, $user_name, $start_date, $start_time, $address, $ticket_use_url){
+        $data = array(
+            "service" => "send_e_ticket",
+            "hostname" => "email.pneko",
+            "data" => array(
+                "email_address" => $email_address,
+                'ticket_sub_title' => $ticket_sub_title,
+                'ticket_name' => $ticket_name,
+                'user_name' => $user_name,
+                'start_date' => $start_date,
+                'start_time' => $start_time,
+                'address' => $address,
+                'ticket_use_url' => $ticket_use_url
+            )
+        );
+        $result = $this->accessApi->accessApi($data);
+        return($result);
+    }
+
 }
 ?>
 

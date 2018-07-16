@@ -1,16 +1,20 @@
 <?php
 namespace App\Http\Controllers\API\Web\Transaction;
 
+use App\EmailAPI;
 use App\Enums\Pay2GoEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PayRequest;
 use App\Repositories\ErrorLogRepository;
+use App\Repositories\UserActivityTicket\UserActivityTicketRepo;
 use App\Services\Transaction\Pay2GoTwGovService;
 use App\Services\Transaction\ReceiptService;
 use App\Services\Transaction\TapPayService;
 use App\Services\Transaction\TwGovReceiptService;
 use App\Services\TransactionService;
+use App\Services\User\CreditAccountService;
 use App\Services\UserService;
+use App\UserActivityTicket;
 use Illuminate\Support\Facades\DB;
 use Auth;
 use League\Flysystem\Exception;
@@ -44,13 +48,27 @@ class PayController extends Controller
      *
      */
 
-    function pay(PayRequest $request, ReceiptService $receiptService, Pay2GoTwGovService $pay2GoTwGovService, TwGovReceiptService $twGovReceiptService)
+    function pay(PayRequest $request, ReceiptService $receiptService, Pay2GoTwGovService $pay2GoTwGovService, TwGovReceiptService $twGovReceiptService, CreditAccountService $UserCreditAccountService, EmailAPI $emailAPI)
     {
         $data = $request->input();
         //---------------------------------------------------------
+        // 限制使用一種方式
+        //---------------------------------------------------------
+        $payment_method_count = 0;
+        $single_payment_method = '';
+        if(isset($data['user_credit_using_amt'])){
+            $single_payment_method = 'user_credit';
+            $payment_method_count++;
+        }
+        if(isset($request->prime_token)){
+            $single_payment_method = 'credit_card';
+            $payment_method_count++;
+        }
+        if($payment_method_count > 1 || $payment_method_count == 0) throw new Exception('失敗。');
+        //---------------------------------------------------------
         // 資料處理
         //---------------------------------------------------------
-        if($data['receipt_carry_type'] != 'null'){
+        if(!empty($data['receipt_carry_type'])){
             $data['receipt_donation_code'] = null;
         }else{
             $data['receipt_carry_num'] = null;
@@ -74,32 +92,83 @@ class PayController extends Controller
         //  取得Receipt + total price
         //---------------------------------------------------------
         $receipt = $receiptService->get_by_user_id(Auth::user()->id);
-        $receipt_total_price = $receiptService->total_price($receipt);
+
+        $receiptService->create_items_payment_attr($receipt);
+        $receiptService->items_init_payment_attr_ori_amt_and_final_amt($receipt);
+        $receipt_final_total_price = $receiptService->get_final_payment_total_price_by_items_payment_attr();
+
         $receipt_items = $receiptService->receipt_items($receipt);
+        /*---------------------------------------------------------
+        //  金額分配：third_payment, 折價券, 帳號餘額等
+        //  計算步驟：
+        //    原始總價
+        //    扣除折價券  TODO 會增加功能use coupon
+        //    -------------------
+        //    需支付格價
+        //    所有支付方式（credit card 、 Pneko credit 等）加權平分
+        //
+        //
+        ---------------------------------------------------------*/
+        $total_price_for_payment = $receipt_final_total_price;
+        $payment_methods_arr = [];
         //---------------------------------------------------------
-        //  TayPay請款資訊
+        //  使用user credit
         //---------------------------------------------------------
-        $tap_pay_req_params = [
-            'prime' => $request->prime_token,
-            'partner_key' => env('TAP_PAY_PARTNER_KEY'),
-            'merchant_id' => env('TAP_PAY_MERCHANT_ID'),
-            'amount' => $receipt_total_price,
-            'details' => 'activity ticket',
-            'currency' => CLIENT_CUR_UNIT,
-            "cardholder"=> [
-                "phone_number"   => '+'.$data['phone_area_code'].$data['phone_number'],
-                "name"			=> Auth::user()->name,
-                "email"			=> $data['email']
-            ],
-            "delay_capture_in_days" => 0,
-            "instalment"    => 0,
-            "remember"      => false,
-        ];
-        $receipt['total_price'] = $receipt_total_price;
+        if($single_payment_method == 'user_credit' && isset($data['user_credit_using_amt']) && $data['user_credit_using_amt'] > 0){
+            if(!isset(Auth::user()->credit_account->credit, Auth::user()->credit_account->currency_unit)){
+                throw new Exception();
+            }
+            if($data['user_credit_using_amt'] > cur_convert(Auth::user()->credit_account->credit, Auth::user()->credit_account->currency_unit)){
+                throw new Exception();
+            }
+            if($data['user_credit_using_amt'] < $receipt_final_total_price){
+                throw new Exception('帳戶餘額不足。');
+            }
+            $user_credit_for_payment = $data['user_credit_using_amt'];
+            $payment_methods_arr[] = [
+                'name' => 'user_credit',
+                'amt' => $user_credit_for_payment
+            ];
+        //---------------------------------------------------------
+        //  使用credit card
+        //---------------------------------------------------------
+        }elseif($single_payment_method == 'credit_card'){
+            $credit_card_amt_for_payment = $total_price_for_payment;
+            $payment_methods_arr[] = [
+                'name' => 'credit_card',
+                'amt' => $credit_card_amt_for_payment
+            ];
+            //---------------------------------------------------------
+            //  TayPay請款資訊
+            //---------------------------------------------------------
+            $tap_pay_req_params = [
+                'prime' => $request->prime_token,
+                'partner_key' => env('TAP_PAY_PARTNER_KEY'),
+                'merchant_id' => env('TAP_PAY_MERCHANT_ID'),
+                'amount' => $credit_card_amt_for_payment,
+                'details' => 'activity ticket',
+                'currency' => 'TWD',
+                "cardholder"=> [
+                    "phone_number"   => '+'.$data['phone_area_code'].$data['phone_number'],
+                    "name"			=>  Auth::user()->name,
+                    "email"			=> $data['email']
+                ],
+                "delay_capture_in_days" => 0,
+                "instalment"    => 0,
+                "remember"      => false,
+            ];
+        }else{
+            throw new Exception('失敗。');
+        }
+        $receiptService->allocate_payment_method_for_items_payment_attr($payment_methods_arr);
         //----------------------------------------------
         // 移除receipt,購物車; 新增Invoice； 新增票券
         //----------------------------------------------
-        $create_ticket = $this->transactionService->transfer_user_receipts_to_invoice_and_create_us_tickets(Auth::user()->id,$tap_pay_req_params);
+        $create_ticket = $this->transactionService->transfer_user_receipts_to_invoice_and_create_us_tickets(
+            Auth::user()->id,
+            ['amount' => $total_price_for_payment, 'currency' => CLIENT_CUR_UNIT, 'pdt_payment_methods' => $receiptService->items_payment_attr],
+            $receipt
+        );
         if(!$create_ticket['success']) {
             DB::rollback();
             $this->err_log->err('transfer receipt to product fail',__CLASS__,__FUNCTION__);
@@ -119,16 +188,47 @@ class PayController extends Controller
             $data['address_for_lottery_mailing']
         );
         //----------------------------------------------
-        // 第三方支付
+        // 進行支付
         //----------------------------------------------
-        $tap_pay_action_pay = $this->tapPayService->pay($tap_pay_req_params);
+        if($single_payment_method == 'credit_card'){
+            //----------------------------------------------
+            // 第三方支付
+            //----------------------------------------------
+            $tap_pay_action_pay = $this->tapPayService->pay($tap_pay_req_params);
+        }elseif($single_payment_method == 'user_credit'){
+            $UserCreditAccountService->decrease_credit($user_credit_for_payment, CLIENT_CUR_UNIT, Auth::user()->id);
+        }
         DB::commit();
         //----------------------------------------------
         // 加入付款資訊
         //----------------------------------------------
-        $add_tappay_info = $this->transactionService->add_tap_pay_info_in_invoice($create_ticket['invoice_id'], Auth::user()->id, $tap_pay_action_pay);
-        if(!$add_tappay_info['success']){
-            $this->err_log->err('fail to add tappay info to invoice'.json_encode($tap_pay_action_pay),__CLASS__,__FUNCTION__);
+        if($single_payment_method == 'credit_card'){
+            $add_tappay_info = $this->transactionService->add_tap_pay_info_in_invoice($create_ticket['invoice_id'], Auth::user()->id, $tap_pay_action_pay);
+            if(!$add_tappay_info['success']){
+                $this->err_log->err('fail to add tappay info to invoice'.json_encode($tap_pay_action_pay),__CLASS__,__FUNCTION__);
+            }
+        }
+        //----------------------------------------------
+        // 寄送電子票券
+        //----------------------------------------------
+        try{
+            if(!empty($e_tickets = UserActivityTicket::with('owner')->whereIn('ticket_id', $create_ticket['ticket_hash_ids'])->get())){
+                foreach ($e_tickets as $e_ticket){
+                    $emailAPI->send_e_ticket(
+                        $e_ticket->owner->email,
+                        $e_ticket->sub_title,
+                        $e_ticket->name,
+                        $e_ticket->owner->name,
+                        $e_ticket->start_date,
+                        optional(optional($e_ticket['relate_gp_activity'])['user_group_activity'])['start_time'],
+                        optional(optional($e_ticket->Trip_activity_ticket)->Trip_activity)->map_address_zh_tw,
+                        env('APP_URL').'/activity_ticket/use/'.$e_ticket->ticket_id
+                    );
+                }
+
+            };
+        }catch (Exception $e){
+
         }
         //----------------------------------------------
         // 電子發票

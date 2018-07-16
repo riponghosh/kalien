@@ -60,30 +60,38 @@ class MerchantRepo
     }
 
     function update_merchant_credit($amount, $amount_unit, $method, $merchant_id){
+        $output = [
+            'merchant_id' => $merchant_id,
+            'ori_amount' => $amount,
+            'credit_currency_unit' => '',
+            'amount_unit' => $amount_unit,
+            'amount' => $amount,
+            'new_amount' => 0
+        ];
         $merchant_account = $this->get_credit_account($merchant_id);
-        if(!$merchant_account) throw new Exception();
+        if(!$merchant_account) throw new Exception('account is not exist');
         $merchant_credit_unit = $merchant_account->currency_unit;
         $merchant_credit = $merchant_account->credit;
         $input_amount = cur_convert($amount, $amount_unit, $merchant_credit_unit);
+        if(!$input_amount) throw new Exception('no input amount');
 
-        if(!$input_amount) throw new Exception();
-
+        $output['ori_amount'] = $merchant_credit;
+        $output['credit_currency_unit'] = $merchant_credit_unit;
         if($method == 'increase'){
             $new_credit = $merchant_credit + $input_amount;
         }elseif($method == 'decrease'){
             $new_credit = $merchant_credit - $input_amount;
             if($new_credit < 0) throw new Exception('餘額不足已扣除款項。');
         }else{
-            throw new Exception();
+            throw new Exception('不存在的方式');
         }
-
-        $update = MerchantCreditAccount::where('merchant_id', $merchant_id)->update(['credit' => $new_credit]);
-
-        return $update;
+        $output['new_amount'] = $new_credit;
+        if(!MerchantCreditAccount::where('merchant_id', $merchant_id)->update(['credit' => $new_credit]))throw new Exception('update fail');
+        return $output;
     }
     function create_credit_account_operate_record($data){
         $query =  $this->accountOperateRecord->create($data);
-        if(!$query) throw new Exception();
+        if(!$query) throw new Exception('write record fail');
 
         return $query;
     }

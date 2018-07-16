@@ -43,6 +43,8 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->mapMerchantApiRoutes();
 
+        $this->mapEmployeeApiRoutes();
+
         //
     }
 
@@ -98,6 +100,16 @@ class RouteServiceProvider extends ServiceProvider
             'prefix' => '/api-merchant',
         ],function ($router){
             require base_path('routes/merchant.api.php');
+        });
+    }
+
+    protected function mapEmployeeApiRoutes(){
+        Route::group([
+            'middleware' => 'web',
+            'namespace' => $this->namespace,
+            'prefix' => '/api-employee',
+        ],function ($router){
+            require base_path('routes/employee.api.php');
         });
     }
 }

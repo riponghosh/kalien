@@ -27,16 +27,14 @@ class TransactionController extends Controller
         ];
 
         if(isset($request['start_date'])){
-            $query_filter['query_settlement_start_date'] =  Carbon::createFromFormat('Y-m-d', $request['start_date'])->toDateString();
+            $query_filter['settlement_start_date'] =  Carbon::createFromFormat('Y-m-d', $request['start_date'])->toDateString();
         }else{
-            $query_filter['query_settlement_start_date'] = Carbon::now()->toDateTimeString();
+            $query_filter['settlement_start_date'] = Carbon::now()->toDateString();
         }
 
         if(isset($request['end_date'])){
-            $query_filter['query_settlement_end_date'] =  Carbon::createFromFormat('Y-m-d', $request['end_date'])->toDateString();
+            $query_filter['settlement_end_date'] =  Carbon::createFromFormat('Y-m-d', $request['end_date'])->toDateString();
         }
-
-
         $records = $this->acPayableContractService->get($query_filter);
 
         $data = $formatter->dataFormat($records);

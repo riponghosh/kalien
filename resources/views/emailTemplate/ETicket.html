@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Pneko - 電子票券</title>
+
+
+    <style type="text/css">
+        img {
+            max-width: 100%;
+        }
+
+        body {
+            font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: none;
+            width: 100% !important;
+            height: 100%;
+            line-height: 1.6em;
+            background-color: #fff;
+            margin: 0;
+            padding: 15px 20px 15px 15px;
+        }
+        .button {
+            display: block;
+            text-align: center;
+            border-radius: 5px;
+            font-weight: bold;
+            text-decoration: none;
+
+        }
+
+
+        .main-submit-btn{
+            background-color: #da2f67;
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.3333333;
+            padding: 14px 0 14px 0;
+        }
+
+
+        @media only screen and (max-width: 640px) {
+            body {
+                //padding: 0 !important;
+            }
+
+            h1 {
+                font-weight: 800 !important;
+                margin: 20px 0 5px !important;
+            }
+
+            h2 {
+                font-weight: 800 !important;
+                margin: 20px 0 5px !important;
+            }
+
+            h3 {
+                font-weight: 800 !important;
+                margin: 20px 0 5px !important;
+            }
+
+            h4 {
+                font-weight: 800 !important;
+                margin: 20px 0 5px !important;
+            }
+
+            h1 {
+                font-size: 22px !important;
+            }
+
+            h2 {
+                font-size: 18px !important;
+            }
+
+            h3 {
+                font-size: 16px !important;
+            }
+
+            .container {
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            .content {
+                padding: 0 !important;
+            }
+
+            .content-wrap {
+                padding: 10px !important;
+            }
+
+            .invoice {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<table class="body-wrap"
+       style="box-sizing: border-box; width: 100%; background-color: #fff; margin: 0;">
+    <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+        <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;"
+            valign="top"></td>
+        <td class="container" width="600"
+            style="box-sizing: border-box;vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;"
+            valign="top">
+            <div class="content"
+                 style="box-sizing: border-box;max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
+                <table class="main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope
+                       itemtype="http://schema.org/ConfirmAction"
+                       style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; margin: 0; border: none;">
+                    <tr style=" box-sizing: border-box;  margin: 0;">
+                        <td>
+                            <div style="margin-bottom: 20px;">
+                            <img src="https://www.pneko.com/img/components/company_logo/nav_brand_logo_v1.png" style="height: 26px;">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style=" box-sizing: border-box;  margin: 0;">
+                        <td class="content-wrap"
+                            style="box-sizing: border-box;vertical-align: top; margin: 0;padding: 30px;border: 3px solid #86d5b9;border-radius: 7px; background-color: #fff;">
+                            <meta itemprop="name" content=""
+                                  style="box-sizing: border-box; font-size: 14px; margin: 0;"/>
+                            <!--main content-->
+                            <table width="100%" cellpadding="0" cellspacing="0"
+                                   style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                <tr>
+                                    <td>
+                                        <div style="margin-bottom: 25px;">
+                                            <p style="font-size: 22px;">{{$ticket_sub_title}} {{$ticket_name}}</p>
+                                        </div>
+                                        <div style="margin-bottom: 25px;">
+                                            <p></p>
+                                            <p><b>{{$user_name}}您好，</b></p>
+                                            <p>這是你的電子票券，請使用時向店家出示。</p>
+                                            <p>
+                                                <img style="width: 14px;margin-right: 6px;" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMS4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiPgo8Zz4KCTxnPgoJCTxwYXRoIHN0eWxlPSJmaWxsOiNEOERDRTE7IiBkPSJNMCwxMzR2MzI4YzAsMjIuMDU1LDE3Ljk0NSw0MCw0MCw0MGg0MzJjMjIuMDU1LDAsNDAtMTcuOTQ1LDQwLTQwVjEzNEgweiIvPgoJPC9nPgoJPGc+CgkJPHBhdGggc3R5bGU9ImZpbGw6I0ZGNEYxOTsiIGQ9Ik00NzIsMjJINDBDMTcuOTQ1LDIyLDAsMzkuOTQ1LDAsNjJ2NzJoNTEyVjYyQzUxMiwzOS45NDUsNDk0LjA1NCwyMiw0NzIsMjJ6IE02NCwxMDIgICAgYy0xMy4yNTUsMC0yNC0xMC43NDUtMjQtMjRzMTAuNzQ1LTI0LDI0LTI0czI0LDEwLjc0NSwyNCwyNFM3Ny4yNTUsMTAyLDY0LDEwMnogTTQ0OCwxMDJjLTEzLjI1NSwwLTI0LTEwLjc0NS0yNC0yNCAgICBzMTAuNzQ1LTI0LDI0LTI0czI0LDEwLjc0NSwyNCwyNFM0NjEuMjU1LDEwMiw0NDgsMTAyeiIvPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMjU2LDIwNmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyczE0LjM1MiwzMiwzMiwzMnMzMi0xNC4zNTIsMzItMzJTMjczLjY0OCwyMDYsMjU2LDIwNnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMTc2LDIwNmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyczE0LjM1MiwzMiwzMiwzMnMzMi0xNC4zNTIsMzItMzJTMTkzLjY0OCwyMDYsMTc2LDIwNnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNOTYsMjA2Yy0xNy42NDgsMC0zMiwxNC4zNTItMzIsMzJzMTQuMzUyLDMyLDMyLDMyczMyLTE0LjM1MiwzMi0zMlMxMTMuNjQ4LDIwNiw5NiwyMDZ6Ii8+CgkJPC9nPgoJCTxnPgoJCQk8cGF0aCBzdHlsZT0iZmlsbDojRkZGRkZGOyIgZD0iTTMzNiwyMDZjLTE3LjY0OCwwLTMyLDE0LjM1Mi0zMiwzMnMxNC4zNTIsMzIsMzIsMzJjMTcuNjQ4LDAsMzItMTQuMzUyLDMyLTMyICAgICBTMzUzLjY0OCwyMDYsMzM2LDIwNnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNNDE2LDI3MGMxNy42NDgsMCwzMi0xNC4zNTIsMzItMzJzLTE0LjM1Mi0zMi0zMi0zMmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyICAgICBTMzk4LjM1MSwyNzAsNDE2LDI3MHoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMjU2LDI4NmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyczE0LjM1MiwzMiwzMiwzMnMzMi0xNC4zNTIsMzItMzJTMjczLjY0OCwyODYsMjU2LDI4NnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMTc2LDI4NmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyczE0LjM1MiwzMiwzMiwzMnMzMi0xNC4zNTIsMzItMzJTMTkzLjY0OCwyODYsMTc2LDI4NnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNOTYsMjg2Yy0xNy42NDgsMC0zMiwxNC4zNTItMzIsMzJzMTQuMzUyLDMyLDMyLDMyczMyLTE0LjM1MiwzMi0zMlMxMTMuNjQ4LDI4Niw5NiwyODZ6Ii8+CgkJPC9nPgoJCTxnPgoJCQk8cGF0aCBzdHlsZT0iZmlsbDojRkZGRkZGOyIgZD0iTTMzNiwyODZjLTE3LjY0OCwwLTMyLDE0LjM1Mi0zMiwzMnMxNC4zNTIsMzIsMzIsMzJjMTcuNjQ4LDAsMzItMTQuMzUyLDMyLTMyICAgICBTMzUzLjY0OCwyODYsMzM2LDI4NnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNNDE2LDI4NmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyczE0LjM1MiwzMiwzMiwzMmMxNy42NDgsMCwzMi0xNC4zNTIsMzItMzIgICAgIFM0MzMuNjQ4LDI4Niw0MTYsMjg2eiIvPgoJCTwvZz4KCQk8Zz4KCQkJPHBhdGggc3R5bGU9ImZpbGw6I0ZGRkZGRjsiIGQ9Ik0yNTYsMzY2Yy0xNy42NDgsMC0zMiwxNC4zNTItMzIsMzJjMCwxNy42NDgsMTQuMzUyLDMyLDMyLDMyczMyLTE0LjM1MiwzMi0zMiAgICAgQzI4OCwzODAuMzUxLDI3My42NDgsMzY2LDI1NiwzNjZ6Ii8+CgkJPC9nPgoJCTxnPgoJCQk8cGF0aCBzdHlsZT0iZmlsbDojRkZGRkZGOyIgZD0iTTE3NiwzNjZjLTE3LjY0OCwwLTMyLDE0LjM1Mi0zMiwzMmMwLDE3LjY0OCwxNC4zNTIsMzIsMzIsMzJzMzItMTQuMzUyLDMyLTMyICAgICBDMjA4LDM4MC4zNTEsMTkzLjY0OCwzNjYsMTc2LDM2NnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNOTYsMzY2Yy0xNy42NDgsMC0zMiwxNC4zNTItMzIsMzJjMCwxNy42NDgsMTQuMzUyLDMyLDMyLDMyczMyLTE0LjM1MiwzMi0zMiAgICAgQzEyOCwzODAuMzUxLDExMy42NDgsMzY2LDk2LDM2NnoiLz4KCQk8L2c+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMzM2LDM2NmMtMTcuNjQ4LDAtMzIsMTQuMzUyLTMyLDMyYzAsMTcuNjQ4LDE0LjM1MiwzMiwzMiwzMmMxNy42NDgsMCwzMi0xNC4zNTIsMzItMzIgICAgIEMzNjgsMzgwLjM1MSwzNTMuNjQ4LDM2NiwzMzYsMzY2eiIvPgoJCTwvZz4KCQk8Zz4KCQkJPHBhdGggc3R5bGU9ImZpbGw6I0ZGRkZGRjsiIGQ9Ik00MTYsMzY2Yy0xNy42NDgsMC0zMiwxNC4zNTItMzIsMzJjMCwxNy42NDgsMTQuMzUyLDMyLDMyLDMyYzE3LjY0OCwwLDMyLTE0LjM1MiwzMi0zMiAgICAgQzQ0OCwzODAuMzUxLDQzMy42NDgsMzY2LDQxNiwzNjZ6Ii8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiM1QzU0NkE7IiBkPSJNNjQsOTBjLTYuNjI1LDAtMTItNS4zNzEtMTItMTJWMjJjMC02LjYyOSw1LjM3NS0xMiwxMi0xMnMxMiw1LjM3MSwxMiwxMnY1NiAgICAgQzc2LDg0LjYyOSw3MC42MjUsOTAsNjQsOTB6Ii8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIHN0eWxlPSJmaWxsOiM1QzU0NkE7IiBkPSJNNDQ4LDkwYy02LjYyNSwwLTEyLTUuMzcxLTEyLTEyVjIyYzAtNi42MjksNS4zNzUtMTIsMTItMTJzMTIsNS4zNzEsMTIsMTJ2NTYgICAgIEM0NjAsODQuNjI5LDQ1NC42MjUsOTAsNDQ4LDkweiIvPgoJCTwvZz4KCTwvZz4KCTxnPgoJCTxjaXJjbGUgc3R5bGU9ImZpbGw6I0ZGRDIwMDsiIGN4PSI5NiIgY3k9IjIzOCIgcj0iMzIiLz4KCTwvZz4KCTxnPgoJCTxjaXJjbGUgc3R5bGU9ImZpbGw6I0ZGOTYwMDsiIGN4PSIyNTYiIGN5PSIzOTgiIHI9IjMyIi8+Cgk8L2c+Cgk8Zz4KCQk8Y2lyY2xlIHN0eWxlPSJmaWxsOiNGRjRGMTk7IiBjeD0iMzM2IiBjeT0iMzE4IiByPSIzMiIvPgoJPC9nPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
+                                                <span style="vertical-align: text-bottom">{{$start_date}} {{$start_time}}</span>
+                                            </p>
+                                            <p>
+                                                <img style="width: 14px;margin-right: 6px;" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDYwIDYwIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2MCA2MDsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHdpZHRoPSI1MTJweCIgaGVpZ2h0PSI1MTJweCI+CjxyZWN0IHg9IjE2LjUiIHk9IjMxIiBzdHlsZT0iZmlsbDojODcxQjFCOyIgd2lkdGg9IjEwIiBoZWlnaHQ9IjYiLz4KPHBhdGggc3R5bGU9ImZpbGw6IzQyNEE2MDsiIGQ9Ik0zLjUsMGMtMC41NTIsMC0xLDAuNDQ3LTEsMXYzdjU1YzAsMC41NTMsMC40NDgsMSwxLDFzMS0wLjQ0NywxLTFWNFYxQzQuNSwwLjQ0Nyw0LjA1MiwwLDMuNSwweiIvPgo8cmVjdCB4PSI0LjUiIHk9IjQiIHN0eWxlPSJmaWxsOiNERDM1MkU7IiB3aWR0aD0iMjIiIGhlaWdodD0iMjkiLz4KPHBhdGggc3R5bGU9ImZpbGw6I0MwM0EyQjsiIGQ9Ik0yNi41LDl2MjRoLTZjLTIuMjA5LDAtNCwxLjc5MS00LDRjMCwyLjIwOSwxLjc5MSw0LDQsNGg0aDMzbC0xMS0xNmwxMS0xNkgyNi41eiIvPgo8cGF0aCBzdHlsZT0iZmlsbDojQjAyNzIxOyIgZD0iTTE2LjUsMzdjMCwyLjIwOSwxLjc5MSw0LDQsNGg0aDJ2LThoLTZDMTguMjkxLDMzLDE2LjUsMzQuNzkxLDE2LjUsMzd6Ii8+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
+                                                <span style="vertical-align: text-bottom">{{$address}}</span>
+                                            </p>
+                                        </div>
+                                        <div style="text-align: center">
+                                            <a href="{{$ticket_use_url}}" class="button main-submit-btn" style="margin: 0 auto;width: 70%;">使用票券</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <hr>
+                                        <p style="font-size: 12px;">© 2016-2018 喵星人科技股份有限公司, All Rights Reserved.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </td>
+    </tr>
+</table>
+</body>

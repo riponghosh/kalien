@@ -122,8 +122,8 @@ class TripActivityService
             $start_time = isset($activity_ticket['start_time']) ? $activity_ticket['start_time'] : null;
             //add attrs
             $attr = array();
-            if(isset($activity_ticket['is_available_group_for_limit_gp_ticket'])){
-                $attr['is_available_group_for_limit_gp_ticket'] = $activity_ticket['is_available_group_for_limit_gp_ticket'];
+            if(isset($activity_ticket['is_available_group_for_limit_gp_ticket']) || !empty($activity_ticket['gp_activity_is_achieved'])){
+                $attr['gp_activity_is_achieved'] = true;
             }
             $check_tic = $this->tripActivityTicketService->get_allow_purchase_by_id($activity_ticket['ticket_id'], $activity_ticket['start_date'], $start_time, $attr);
             if(!$check_tic){

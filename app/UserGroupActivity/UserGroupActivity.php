@@ -24,7 +24,7 @@ class UserGroupActivity extends Model
         );
     }
     public function trip_activity_ticket(){
-        return $this->hasOne('App\TripActivityTicket','id', 'activity_ticket_id');
+        return $this->hasOne('App\Models\TripActivityTicket','id', 'activity_ticket_id');
     }
 
     public function applicants(){
@@ -36,7 +36,7 @@ class UserGroupActivity extends Model
     }
 
     public function trip_activity(){
-        return $this->trip_activity_ticket->hasOne('App\Product', 'id', 'trip_activity_id');
+        return $this->trip_activity_ticket->hasOne('App\Models\Product', 'id', 'trip_activity_id');
     }
 
     public function block_for_conflict(){
@@ -58,6 +58,31 @@ class UserGroupActivity extends Model
             $model->block_for_conflict()->delete();
         });
     }
+    /*
+    *  Scope
+    */
+    public function scopeDurationBetween($query, $startDateAfter = null, $startDateBefore = null){
+        if(!(empty($startDateAfter) && empty($startDateBefore))){
+            !empty($startDateAfter) ? $query->whereDate('start_date','>=',$startDateAfter) : null;
+            !empty($startDateBefore) ? $query->whereDate('start_date','<=',$startDateBefore) : null;
+        }
+
+        return $query;
+
+    }
+
+    public function scopeNotBegin($query){
+        return $query->whereDate('start_at','<=', date('y-m-d H:i:s'));
+    }
+
+    public function scopeHasTitle($query){
+        return $query->whereNotNull('activity_title')->where('activity_title','!=', '');
+    }
+
+    public function scopeExpired($query){
+        return $query->whereDate('start_at','<', date('y-m-d H:i:s'));
+    }
+
 
 }
 ?>

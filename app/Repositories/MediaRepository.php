@@ -29,7 +29,7 @@ class MediaRepository
         if(!$query) return false;
         return $query->media_id;
     }
-
+    
     public function upload_media($media, $standard_path, $name, $author_id, $low_qual_media=NULL, $low_qual_path=NULL){
         if(!$media || $media == null) return ['success' => false];
         if($name == '' || $name == null) return ['success' => false];

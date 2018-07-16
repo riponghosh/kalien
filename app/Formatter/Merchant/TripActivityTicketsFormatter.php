@@ -2,6 +2,8 @@
 namespace  App\Formatter\Merchant;
 
 use App\Formatter\Interfaces\IFormatter;
+use App\Formatter\TripActivity\PackageDisableDatesFormatter;
+use App\Formatter\TripActivity\PackageDisableWeekFormatter;
 
 class TripActivityTicketsFormatter implements IFormatter
 {
@@ -27,9 +29,14 @@ class TripActivityTicketsFormatter implements IFormatter
         "time_range_restrict_group_num_per_day": 1
      */
     protected $ticketIncidentalCouponsFormatter;
-    public function __construct(TicketIncidentalCouponsFormatter $ticketIncidentalCouponsFormatter)
+    protected $packageDisableDatesFormatter;
+    protected $packageDisableWeekFormatter;
+
+    public function __construct(TicketIncidentalCouponsFormatter $ticketIncidentalCouponsFormatter, PackageDisableDatesFormatter $packageDisableDatesFormatter, PackageDisableWeekFormatter $packageDisableWeekFormatter)
     {
         $this->ticketIncidentalCouponsFormatter = $ticketIncidentalCouponsFormatter;
+        $this->packageDisableDatesFormatter = $packageDisableDatesFormatter;
+        $this->packageDisableWeekFormatter = $packageDisableWeekFormatter;
     }
 
     public function dataFormat($data, callable $closure = null)
@@ -53,7 +60,10 @@ class TripActivityTicketsFormatter implements IFormatter
                 "max_participant_for_gp_activity" => $tripActivityTicket->max_participant_for_gp_activity,
                 "has_time_ranges" => $tripActivityTicket->has_time_ranges,
                 "time_range_restrict_group_num_per_day" => $tripActivityTicket->time_range_restrict_group_num_per_day,
-                "ta_ticket_incidental_coupon" => $this->ticketIncidentalCouponsFormatter->dataFormat($tripActivityTicket->ta_ticket_incidental_coupon)
+                "ta_ticket_incidental_coupon" => $this->ticketIncidentalCouponsFormatter->dataFormat($tripActivityTicket->ta_ticket_incidental_coupon),
+                "disable_sales_dates" => $this->packageDisableDatesFormatter->dataFormat($tripActivityTicket->disable_dates),
+                "disable_sales_weeks" => $this->packageDisableWeekFormatter->dataFormat($tripActivityTicket->disable_weeks),
+                'gp_buying_status' => $tripActivityTicket->gp_buying_status
             ];
         });
     }

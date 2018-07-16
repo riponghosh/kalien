@@ -82,9 +82,9 @@
                 confirmButtonText: '確認退票 !',
                 cancelButtonText: '取消',
                 showCancelButton: true,
-                closeOnConfirm: false,
+                closeOnConfirm: true,
             }, function () {
-                $.post('/api-web/v1/activity_ticket/refund',{ticket_id: $ticketId}, function (res) {
+                $.post('/api-web/v1/user_activity_ticket/refund',{ticket_id: $ticketId}, function (res) {
                     if (res.success) {
                         swal({
                             type: 'success',
@@ -104,6 +104,8 @@
                             cancelButtonText: '取消',
                             showCancelButton: true,
                             closeOnConfirm: false,
+                        },function () {
+                            window.location.reload();
                         });
                     }else{
                         swal("發生錯誤，請聯絡客服", ".", "error");

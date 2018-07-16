@@ -39,6 +39,9 @@ class Kernel extends HttpKernel
         ],
         'api-merchant' => [
             \Barryvdh\Cors\HandleCors::class
+        ],
+        'api-employee' => [
+            \Barryvdh\Cors\HandleCors::class
         ]
     ];
 

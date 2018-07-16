@@ -47,6 +47,12 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Guide','user_id','id');
     }
+
+    public function avatar(){
+        return $this->hasOne('App\UserIcon', 'user_id', 'id')->with('media')->where('is_used', 1);
+    }
+
+    //之後要棄用user_icon改用avatar
     public function user_icon(){
         return $this->user_icons()->with('media')->where('is_used', 1);
     }
@@ -79,5 +85,9 @@ class User extends Authenticatable
     public function user_services(){
     	return $this->hasMany('App\UserService', 'user_id', 'id');
 	}
+	/*User 帳戶*/
+	public function credit_account(){
+	    return $this->hasOne('App\UserCreditAccount', 'user_id', 'id');
+    }
 
 }

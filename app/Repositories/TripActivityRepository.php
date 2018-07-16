@@ -3,11 +3,11 @@
 namespace App\Repositories;
 
 use App\TaTicketIncidentalCoupon;
-use App\Product;
+use App\Models\Product;
 use App\TripActivityMedia;
 use App\Media;
 use App\Repositories\ErrorLogRepository;
-use App\TripActivityTicket;
+use App\Models\TripActivityTicket;
 use Illuminate\Support\Facades\DB;
 
 

@@ -15,7 +15,7 @@ use App\AccountPayableContract;
 use App\AccountPayableContractRecord\AccountPayableContractRecord;
 use App\Receipt;
 use App\Services\AcPayableContract\AcPayableContractService;
-use App\TripActivityTicket;
+use App\Models\TripActivityTicket;
 use App\UserActivityTicket;
 use App\UserActivityTicketUserGpActivity;
 use App\UserServiceTicket;
@@ -148,18 +148,7 @@ class TransactionRepository
         return ['success' => true];
     }
 
-	public function get_receipt_by_user_id($user_id){
-		/*user_service*/
-		$user_services_tickets = $this->receipt->with('guide_service_ticket')->with('guide_service_ticket.seller')->where('user_id', $user_id)->where('product_type',1)->get();
-        $user_services_tickets = !$user_services_tickets ? null : $user_services_tickets;
-		/*activity_ticket*/
-        $trip_activity_ticket = $this->receipt->with('gp_activity')->where('user_id', $user_id)->where('product_type', self::TIC_TYPE_US_ACTIVITY)->get();
-		$trip_activity_ticket = !$trip_activity_ticket ? null : $trip_activity_ticket;
-		if($trip_activity_ticket == null && $user_services_tickets == null) return ['success' => false];
-		return ['success' => true , 'user_services_tickets' => $user_services_tickets, 'trip_activity_tickets' => $trip_activity_ticket];
-	}
-
-	public function delete_cart_and_receipts_by_rts_id_and_create_invoice_and_user_tickets_and_ac_payable_contract($user_id, $receipts_item = array(), $third_party_request){
+	public function delete_cart_and_receipts_by_rts_id_and_create_invoice_and_user_tickets_and_ac_payable_contract($user_id, $receipts_item = array(), $total_payment_info){
         $get_user_services_receipts = isset($receipts_item[ProductTicketTypeEnum::USER_SERVICE_TICKET]) ? $receipts_item[ProductTicketTypeEnum::USER_SERVICE_TICKET] : null;
         $get_activity_ticket_receipts = isset($receipts_item[ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET]) ? $receipts_item[ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET] : null;
     //--------------------------------------------------
@@ -225,6 +214,17 @@ class TransactionRepository
                         'pd_use_start_date' => Carbon::createFromFormat('Y-m-d H:i:s', $activity_ticket['start_date'].' '.'00:00:00')->tz($receipt->trip_activity->time_zone)->toDateTimeString(),
                         'end_date' => $activity_ticket['end_date'],
                     ];
+                    $pdt_payment_attrs = $total_payment_info['pdt_payment_methods'][(string)$receipt->id];
+                    $ac_payable['payment_methods'] = array();
+                    foreach ($pdt_payment_attrs['payment_method'] as $pdt_payment_method){
+                        if($pdt_payment_method['amt'] != null){
+                            $ac_payable['payment_methods'][] = [
+                                'payment_type' => $pdt_payment_method['type'],
+                                'amount' => $pdt_payment_method['amt'],
+                                'amount_unit' => CLIENT_CUR_UNIT
+                            ];
+                        }
+                    }
                     $ac_payable['refund_rules'] = array();
                     //檢查有否refund_rules
                     /*
@@ -255,12 +255,14 @@ class TransactionRepository
                     if($receipt->relate_gp_activity_id != null){
                         $group_data = [
                             'gp_activity_id' => $receipt->relate_gp_activity_id,
-                            'ticket_id' => $user_activity_ticket['ticket_id'],
-                            'apply_to_is_available_group_for_limit_gp_ticket' => false
+                            'ticket_id' => $user_activity_ticket['id'],  //持有票卷id
+                            'pdt_ticket_id' => $user_activity_ticket['trip_activity_ticket_id'], //產品原本id
+                            'ticket_type' => ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET,
+                            'group_apply_to_achieved' => false
                         ];
                         //有否限制票量和最少成團人數
                         if($receipt->trip_activity_ticket->time_range_restrict_group_num_per_day != null) {
-                            $group_data['apply_to_is_available_group_for_limit_gp_ticket'] = true;
+                            $group_data['group_apply_to_achieved'] = true;
                         }
                         array_push($gp_activity_and_joiners,$group_data);
                     }
@@ -269,20 +271,22 @@ class TransactionRepository
             }
             //Insert user_activity_ticket_user__activity
             foreach ($gp_activity_and_joiners as $v){
-                $query = $this->userActivityTicket->where('ticket_id', $v['ticket_id'])->first();
-                if(!$query){
-                    $this->err_log->err('insert user_activity_ticket_gp_activity fail1', self::CLASS_NAME, __FUNCTION__);
-                    return ['success' => false];
-                }
+                if($v['ticket_type'] == ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET){
+                    $query = $this->userActivityTicket->where('id', $v['ticket_id'])->first();
+                    if(!$query){
+                        $this->err_log->err('insert user_activity_ticket_gp_activity fail1', self::CLASS_NAME, __FUNCTION__);
+                        return ['success' => false];
+                    }
 
-                $insert_query = UserActivityTicketUserGpActivity::create([
-                    'user_activity_ticket_id' => $query['id'],
-                    'user_gp_activity_id' => $v['gp_activity_id']
-                ]);
+                    $insert_query = UserActivityTicketUserGpActivity::create([
+                        'user_activity_ticket_id' => $query['id'],
+                        'user_gp_activity_id' => $v['gp_activity_id']
+                    ]);
 
-                if(!$insert_query){
-                    $this->err_log->err('insert user_activity_ticket_gp_activity fail2', self::CLASS_NAME, __FUNCTION__);
-                    return ['success' => false];
+                    if(!$insert_query){
+                        $this->err_log->err('insert user_activity_ticket_gp_activity fail2', self::CLASS_NAME, __FUNCTION__);
+                        return ['success' => false];
+                    }
                 }
             }
 
@@ -378,8 +382,8 @@ class TransactionRepository
         $new_invoice_id = $create_invoice->insertGetId([
             'owner_id' => $user_id,
             'invoice_id' => hash('ripemd160', $user_id.date('Y-m-d H:i:s').'invoice'),
-            'total_amount' => $third_party_request['amount'],
-            'currency_unit' => $third_party_request['currency'],
+            'total_amount' => $total_payment_info['amount'],
+            'currency_unit' => $total_payment_info['currency'],
             'created_at' => date('Y-m-d H:i:s')
         ]);
         if(!$new_invoice_id){
@@ -562,6 +566,9 @@ class TransactionRepository
                     'final_transfer_amount_unit' => $data->currency_unit,
                     'merchant_id' => $data->merchant_id
                 ];
+                //--------------------------------------
+                // Recording
+                //--------------------------------------
                 //acPayable record : pneko fee
                 AccountPayableContractRecord::create([
                     'account_payable_contract_id' => $data->id,

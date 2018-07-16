@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Relation::morphMap([
+            'GpBuyingStatus' => 'App\Models\TripActivityTicket\GpBuyingStatus',
+        ]);
+
         Validator::extend('before_equal', function($attribute, $value, $parameters, $validator) {
             return strtotime($validator->getData()[$parameters[0]]) >= strtotime($value);
         });
@@ -57,7 +62,10 @@ class AppServiceProvider extends ServiceProvider
             }else{
                 define('CLIENT_CUR_UNIT', $cur_unit);
             }
+        }
 
+        if(!request()->cookie('tz')){
+            define('TZ', 'Asia/Taipei');
         }
     }
 

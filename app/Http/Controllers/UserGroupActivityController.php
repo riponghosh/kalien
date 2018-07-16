@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Formatter\GroupActivity\GroupActivityFormatter;
 use App\Formatter\TripActivity\TripActivityFormatter;
 use App\Repositories\ErrorLogRepository;
 use App\Services\TransactionService;
@@ -31,23 +32,22 @@ class UserGroupActivityController extends Controller
     }
 
 
-    function show_group_activity(Request $request, TripActivityFormatter $tripActivityFormatter){
+    function show_group_activity(Request $request, TripActivityFormatter $tripActivityFormatter, GroupActivityFormatter $groupActivityFormatter){
         try{
             $get_group_activity = $this->userGroupActivityService->get_by_gp_activity_id($request->gp_activity_id,false,null,false,true);
         }catch (Exception $e){
             return abort(404);
         }
-        $group_activity = $get_group_activity;
+        $group_activity = $groupActivityFormatter->dataFormat($get_group_activity);
         //TODO Query 了trip acitivity兩次，需優化
-        $get_trip_activity = $this->tripActivityService->get_trip_activity($group_activity['trip_activity']['id'],app()->getLocale());
+        $get_trip_activity = $this->tripActivityService->get_trip_activity($get_group_activity['trip_activity']['id'],app()->getLocale());
         if(!$get_trip_activity['success']){
             return abort(404);
         }else{
             $trip_activity = $tripActivityFormatter->dataFormat($get_trip_activity['trip_activity']);
         }
         $organiser =  $this->userService->get_user($request->host_id);
-
-        return view('groupActivity.groupActivity', compact('group_activity', 'organiser','trip_activity'));
+        return view('GpActivityDirect', compact('group_activity', 'organiser','trip_activity'));
 
     }
 //---------------------------------------------------------------

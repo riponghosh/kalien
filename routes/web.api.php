@@ -12,17 +12,14 @@ Route::group(['middleware' => ['locale_lan']],function() {
                 'middleware' => ['web_api_auth']
             ], function ($app){
                 $app->post('use','UserActivityTicketController@use_ticket');
+                $app->post('/authorized_to','UserActivityTicketController@authorized_to');
+                $app->post('refund', 'TicketRefundController@activity_ticket_refund');
             });
             Route::group([
                 'prefix' => 'activity_ticket',
                 'namespace' => 'ActivityTicket'
             ], function ($app) {
                 $app->post('get_ticket_available_purchase_dates_and_time_ranges', 'ActivityTicketController@get_activity_ticket_all_sold_date_and_time_ranges');
-                Route::group([
-                    'middleware' => ['web_api_auth']
-                ], function ($app){
-                    $app->post('refund', 'TicketRefundController@activity_ticket_refund');
-                });
             });
             Route::group([
                 'prefix' => 'transaction',
@@ -38,6 +35,7 @@ Route::group(['middleware' => ['locale_lan']],function() {
                 'middleware' => ['web_api_auth']
             ], function ($app){
                 $app->post('apply_for_join_in', 'GroupActivityController@apply_for_join_in');
+                $app->post('/{gp_activity_id}/participant/change_by_ticket_authorized','GroupActivityController@change_participant_by_ticket_authorized');
             });
             Route::group([
                 'prefix' => 'employee',
@@ -55,14 +53,6 @@ Route::group(['middleware' => ['locale_lan']],function() {
                 ],function ($app){
                     $app->post('/account_withdrawal', 'MerchantController@merchant_account_withdrawal');
                 });
-            });
-            Route::group([
-                'prefix' => 'merchant',
-                'namespace' => 'Merchant',
-                //'middleware' => ['jwt.auth']
-            ], function ($app){
-                $app->post('/group_activity/get', 'GroupActivityController@get_by_trip_activity_ticket_id');
-                $app->post('/group_activity/cancel', 'GroupActivityController@cancel_gp_activity');
             });
         });
     });

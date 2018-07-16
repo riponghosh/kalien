@@ -17,6 +17,7 @@ use App\Repositories\MediaRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 
 class UserProfileRepository{
@@ -41,8 +42,8 @@ class UserProfileRepository{
 		$this->media = $media;
 		$this->guideTouristMatch = $guideTouristMatch;
 		$this->mediaRepository = $mediaRepository;
-		$this->tw_city_data = json_decode(File::get("../database/data/taiwan-country-city.json"),true);
-        $this->jp_city_data = json_decode(File::get("../database/data/japan-country-city.json"),true);
+		$this->tw_city_data = json_decode(file_get_contents(base_path("database/data/taiwan-country-city.json")),true);
+        $this->jp_city_data = json_decode(file_get_contents(base_path("database/data/japan-country-city.json")),true);
 
 	}
 

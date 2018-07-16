@@ -13,10 +13,10 @@
             <ul class="list-unstyled">
                 @lang('app.websiteLanguage')
                 <li>
-                    <a href="{{url('/changeLocaleLangauge/en')}}" >English</a>
+                    <a href="{{url('/changeLocaleLanguage/en')}}" >English</a>
                 </li>
                 <li>
-                    <a href="{{url('/changeLocaleLangauge/zh_tw')}}" >繁體中文</a>
+                    <a href="{{url('/changeLocaleLanguage/zh_tw')}}" >繁體中文</a>
                 </li>
             </ul>
         </div>

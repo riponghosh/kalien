@@ -27,9 +27,11 @@ class TripActivityTicketsFormatter implements IFormatter
         "time_range_restrict_group_num_per_day": 1
      */
     protected $ticketIncidentalCouponsFormatter;
+    protected $gpBuyingStatusFormatter;
 
-    public function __construct(TicketIncidentalCouponsFormatter $ticketIncidentalCouponsFormatter)
+    public function __construct(TicketIncidentalCouponsFormatter $ticketIncidentalCouponsFormatter, GpBuyingStatusFormatter $gpBuyingStatusFormatter)
     {
+        $this->gpBuyingStatusFormatter = $gpBuyingStatusFormatter;
         $this->ticketIncidentalCouponsFormatter = $ticketIncidentalCouponsFormatter;
     }
 
@@ -43,7 +45,7 @@ class TripActivityTicketsFormatter implements IFormatter
 
         return $data->map(function($tripActivityTicket){
             $tripActivityTicket = $this->activity_language_convert($tripActivityTicket, app()->getLocale());
-            return [
+            return (object)[
                 "id" => $tripActivityTicket->id,
                 "name" => $tripActivityTicket->name,
                 "amount" => $tripActivityTicket->amount,
@@ -54,14 +56,15 @@ class TripActivityTicketsFormatter implements IFormatter
                 "max_participant_for_gp_activity" => $tripActivityTicket->max_participant_for_gp_activity,
                 "has_time_ranges" => $tripActivityTicket->has_time_ranges,
                 "time_range_restrict_group_num_per_day" => $tripActivityTicket->time_range_restrict_group_num_per_day,
-                "ta_ticket_incidental_coupon" => $this->ticketIncidentalCouponsFormatter->dataFormat($tripActivityTicket->ta_ticket_incidental_coupon)
+                "ta_ticket_incidental_coupon" => $this->ticketIncidentalCouponsFormatter->dataFormat($tripActivityTicket->ta_ticket_incidental_coupon),
+                'gp_buying_status' => $this->gpBuyingStatusFormatter->dataFormat($tripActivityTicket->gp_buying_status)
             ];
         });
     }
 
     public function activity_language_convert($data, $language){
         $lan = ['zh_tw', 'jp', 'en'];
-        $trans_data = ['name','sub_title','description','map_address'];
+        $trans_data = ['name','description'];
         if(!in_array($language, $lan)) return false;
         foreach ($trans_data as $k){
             if($data{$k.'_'.$language} != null){

@@ -26,26 +26,6 @@ class GroupActivityController extends Controller
         $this->merchantService = $merchantService;
         parent::__construct();
     }
-
-    function get_by_trip_activity_ticket_id(UserGroupActivityService $userGroupActivityService){
-        $request = request()->input();
-        $merchant_member = Auth::user()->id;
-        $merchant_ids = array_pluck($this->merchantService->get_all_by_member($merchant_member),'id');
-        $trip_activity_ticket = $this->tripActivityTicketService->get_by_id($request['activity_ticket_id']);
-        if(!in_array($trip_activity_ticket->merchant_id, $merchant_ids, true)){
-            return $this->apiFormatter->error($this->apiModel);
-        };
-
-        $gp_activities = $userGroupActivityService->get_by_activity_ticket_id($request['activity_ticket_id'], [
-            'limit_activities' => 20,
-            'is_not_expired' => true,
-            'is_available_group_for_limit_gp_ticket' => 0,
-            'query_start_date' => Carbon::now()->toDateTimeString(),
-            'query_end_date' => Carbon::now()->addDay(45)->toDateTimeString()
-        ]);
-        $this->apiModel->setData($gp_activities);
-        return $this->apiFormatter->success($this->apiModel);
-    }
     /**
      * @api {post} /api-merchant/v1/group_activity/get
      * @apiName GetGpActivityByMerchant
@@ -83,21 +63,21 @@ class GroupActivityController extends Controller
             "created_at": "2018-03-02 09:54:23",
             "updated_at": "2018-03-02 09:54:23",
             "timezone": "Asia\/Taipei",
-            "is_available_group_for_limit_gp_ticket": 0,
+            "is_achieved": 0,
             "invalid_by_merchant": 0,
      *      "allow_cancel_gp_by_merchant": 1,
             "applicants": []
         }
      *
      */
-    function get_by_trip_activity_ticket_id_for_vue(UserGroupActivityService $userGroupActivityService){
+    function get_by_trip_activity_ticket_id(UserGroupActivityService $userGroupActivityService){
         $request = request()->input();
         $merchant_id = Auth::user()->id;
 
         $query_filter = [
             'limit_activities' => 20,
             'is_not_expired' => true,
-            'is_available_group_for_limit_gp_ticket' => 0,
+            'is_achieved' => 1,
         ];
         //判斷有否指定票劵
         if(!empty($request['activity_ticket_ids'])){

@@ -16,14 +16,22 @@ Route::group([
         $app->post('/merchant','MerchantController@get_current');
 
         Route::group([
-            'prefix' => '/product'
+            'prefix' => '/product',
+            'namespace' => 'Product'
         ], function ($app){
             $app->post('/', 'ProductController@get');
+            Route::group([
+                'namespace' => 'GroupTypePdt'
+            ], function ($app){
+                $app->post('/disable_dates/create', 'GroupTypePdtController@add_disable_date');
+                $app->post('/disable_dates/delete', 'GroupTypePdtController@delete_disable_date');
+
+            });
         });
         Route::group([
             'prefix' => 'group_activity'
             ],function ($app){
-                $app->post('/get','GroupActivityController@get_by_trip_activity_ticket_id_for_vue');
+                $app->post('/get','GroupActivityController@get_by_trip_activity_ticket_id');
                 $app->post('/cancel', 'GroupActivityController@cancel_gp_activity');
         });
 

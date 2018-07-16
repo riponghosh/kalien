@@ -2,24 +2,29 @@
 
 namespace App\Repositories\UserActivityTicket;
 
+use App\Repositories\BaseRepository;
 use App\UserActivityTicket;
 use League\Flysystem\Exception;
 
-class UserActivityTicketRepo
+class UserActivityTicketRepo extends BaseRepository
 {
-    protected $model;
-
-    function __construct(UserActivityTicket $userActivityTicket)
+    function __construct()
     {
-        $this->model = $userActivityTicket;
+        parent::__construct();
     }
 
-    function eager_load($model){
-        return $model
+    function model()
+    {
+        return new UserActivityTicket();
+    }
+
+    function eagerLoad(){
+        $this->model
             ->with('Trip_activity_ticket')
             ->with('Trip_activity_ticket.Trip_activity')
             ->with('ticket_refunding')
-            ->with('relate_gp_activity.user_group_activity');
+            ->with('relate_gp_activity.user_group_activity')
+            ->with('assignee');
     }
 
     function create($data){
@@ -31,7 +36,7 @@ class UserActivityTicketRepo
 
         return $query;
     }
-
+    /*
     function get($attr = array()){
         $query = $this->model;
         $query = $this->eager_load($query);
@@ -42,6 +47,7 @@ class UserActivityTicketRepo
 
         return $query;
     }
+    */
     function delete_by_model($userActivityTicket){
         $query = $userActivityTicket->delete();
         if(!$query) throw new Exception('失敗。');

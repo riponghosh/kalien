@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\ErrorLogRepository;
 use App\User;
 use App\SocialFbInfo;
+use Illuminate\Support\Facades\Cookie;
 use Laravel\Socialite\Facades\Socialite;
-
 use Illuminate\Support\Facades\DB;
 
 class SocialAccountController extends Controller
@@ -30,8 +30,12 @@ class SocialAccountController extends Controller
         ];
     }
 
-    public function redirectToProvider()
+    public function redirectToProvider($isDirectPage = false)
     {
+        if($isDirectPage){
+            Cookie::queue('isDirectPage', 'isDirectPage', 600000);
+            Cookie::queue('AfterLoginRedirectURL', url()->previous(), 600000);
+        }
         return Socialite::driver('facebook')->redirect();
     }
 
@@ -108,6 +112,7 @@ class SocialAccountController extends Controller
         //-------------------------------------------------
         //性別
         $email = isset($social_fb['email']) ? $social_fb['email'] : null;
+        /*
         switch($social_fb{'gender'}){
             case 'male':
                 $gender = 'M';
@@ -118,6 +123,7 @@ class SocialAccountController extends Controller
             default:
                 $gender = null;
         }
+        */
         //uni name create
         if(isset($social_fb['email']) && !empty($social_fb['email'])){
             $uni_name = explode('@',$social_fb->email)[0];
@@ -147,7 +153,7 @@ class SocialAccountController extends Controller
             'social_fb_id' => $social_fb->getId(),
             'email' => $email,
             'name' => $social_fb['name'],
-            'sex' => $gender,
+            //'sex' => $gender,
             'uni_name' => $uni_name
         ]);
         if($create_user){

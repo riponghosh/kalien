@@ -2,14 +2,16 @@
 namespace  App\Formatter\TripActivity;
 
 use App\Formatter\Interfaces\IFormatter;
-use App\Formatter\Merchant\TripActivityTicketsFormatter;
+use App\Formatter\TripActivity\TripActivityTicketsFormatter;
 
 class TripActivityFormatter implements IFormatter
 {
     protected $tripActivityTicketsFormatter;
+    protected $productImagesFormatter;
 
-    public function __construct(TripActivityTicketsFormatter $tripActivityTicketsFormatter)
+    public function __construct(TripActivityTicketsFormatter $tripActivityTicketsFormatter, ProductImagesFormatter $productImagesFormatter)
     {
+        $this->productImagesFormatter = $productImagesFormatter;
         $this->tripActivityTicketsFormatter = $tripActivityTicketsFormatter;
     }
 
@@ -37,14 +39,14 @@ class TripActivityFormatter implements IFormatter
                 "uni_name" => $tripActivity->uni_name,
                 "map_url" => $tripActivity->map_url,
                 "refund_rules" => optional($tripActivity->trip_activity_refund_rules),
-                "trip_gallery_pic" => !empty($tripActivity->trip_img->where('is_gallery_image',1)->first()) ? $tripActivity->trip_img->where('is_gallery_image',1)->first()->media->media_location_standard : null,
+                "trip_gallery_pic" => storageUrl(!empty($tripActivity->trip_img->where('is_gallery_image',1)->first()) ? $tripActivity->trip_img->where('is_gallery_image',1)->first()->media->media_location_standard : null),
                 "trip_gallery_pic_low_quality" => !empty($tripActivity->trip_img->where('is_gallery_image',1)->first()) ? $tripActivity->trip_img->where('is_gallery_image',1)->first()->media->media_location_low :null,
-                "trip_img" => $tripActivity->trip_img,
+                "media" => $this->productImagesFormatter->dataFormat($tripActivity->trip_img),
                 "rule_infos" => $tripActivity->rule_infos,
                 "trip_activity_short_intros" => $tripActivity->trip_activity_short_intros,
                 "trip_activity_refund_rules" => $tripActivity->trip_activity_refund_rules,
                 "customer_rights" => $tripActivity->customer_rights,
-                'trip_activity_tickets' => $tripActivity->trip_activity_tickets
+                'trip_activity_tickets' => $this->tripActivityTicketsFormatter->dataFormat($tripActivity->trip_activity_tickets)
             ];
     }
 

@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\EmailAPI;
+use App\Enums\ProductTicketTypeEnum;
 use App\Repositories\UserGroupActivity\UserGroupActivityRepo;
 use App\Services\TripActivityTicket\TripActivityTicketService;
 use App\UserGroupActivity\UserGroupActivity;
@@ -26,7 +27,7 @@ class UserGroupActivityService
      * attr:
      * limit_activities 數量
      * is_not_expired (boolean)
-     * {bool}is_available_group_for_limit_gp_ticket 是否限定已成團的group
+     * {bool}is_achieved 是否限定已成團的group
      * {bool}need_min_joiner_for_avl_gp 成團需要最少購票人數
      * {bool}over_start_at 需要過期(活動開始時間)
      * query_start_date
@@ -138,7 +139,7 @@ class UserGroupActivityService
         if(!$gp_activity->is_achieved){
             $gp_activity = $this->helper_check_allow_update_to_is_achieved($gp_activity);
             if($gp_activity->allow_achieved == true){
-                $this->repo->update($gp_activity->id, ['is_available_group_for_limit_gp_ticket' => true]);
+                $this->repo->update_by_id($gp_activity->id, ['is_available_group_for_limit_gp_ticket' => true, 'achieved_at' => date('Y-m-d H:i:s')]);
                 $gp_activity->is_achieved = true;
             }
         }
@@ -173,10 +174,17 @@ class UserGroupActivityService
         return $get_activity;
 
     }
-    function add_participant($activity_id, $applicant_id, $apply_to_is_available_group_for_limit_gp_ticket = false){
-        $gp_activity = $this->repo->first_by_gp_activity_id($activity_id, true, true);
-        if(!$gp_activity) throw new Exception('失敗，會盡快處理問題。');
-        $action = $this->repo->create_participant($gp_activity->id, $applicant_id, $apply_to_is_available_group_for_limit_gp_ticket);
+    function add_participant($activity_id, $applicant_id, $group_apply_to_achieved = false, $authorizes_type = []){
+        $params = [];
+        if(!$gp_activity = $this->repo->first_by_gp_activity_id($activity_id, true, true)) throw new Exception('失敗，會盡快處理問題。');
+        //入場券檢查
+        if(!empty($gp_activity->activity_ticket_id)){ //TODO 重構增加多型，現在局限 TRIP_ACTIVITY_TICKET
+            if($authorizes_type['ticket_type'] != ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET)throw new Exception('需要指定票券加入。');
+            if(empty($authorizes_type['pdt_ticket_id']) || $gp_activity->activity_ticket_id != $authorizes_type['pdt_ticket_id']) throw new Exception('需要票券加入。');
+            $params['ticket_type'] = $authorizes_type['ticket_type'];
+            $params['ticket_id'] = $authorizes_type['ticket_id'];
+        }
+        $action = $this->repo->create_participant($gp_activity->id, $applicant_id, $params);
         /*
          * 重新取出新的團「已加入新成員」
          * TODO 看看有沒有方法優化，不用query兩次
@@ -185,41 +193,56 @@ class UserGroupActivityService
         //----------------------------------------------------------------------
         // 成團設定
         //----------------------------------------------------------------------
-        if($apply_to_is_available_group_for_limit_gp_ticket == true){
-            if($gp_activity->is_available_group_for_limit_gp_ticket == false){
-                $gp_activity = $this->helper_check_allow_update_to_is_achieved($gp_activity);
-                if($gp_activity->allow_achieved == true){
-                    $update = $this->repo->update($gp_activity->id, ['is_available_group_for_limit_gp_ticket' => true]);
-                    if(!$update)throw new Exception('失敗，會盡快處理問題。');
-                }
-                /*
-                |  Send mail
-                */
-                if(!empty($merchant_email = $gp_activity->trip_activity_ticket->merchant->email)){
-                    $this->emailAPI->group_achieved_noti_for_merchant(
-                        $merchant_email,
-                        $gp_activity->trip_activity_ticket->name_zh_tw,
-                        $gp_activity->start_date,
-                        $gp_activity->start_time,
-                        $gp_activity->gp_activity_id,
-                        env('DOMAIN_PATH').'/group_events/'.$gp_activity->gp_activity_id
-                        );
-                }
-
+        if(empty($gp_activity->achieved_at)){
+            $gp_activity = $this->helper_check_allow_update_to_is_achieved($gp_activity);
+            if($gp_activity->allow_achieved == true){
+                $update = $this->repo->update_by_id($gp_activity->id, ['is_available_group_for_limit_gp_ticket' => true, 'achieved_at' => date('Y-m-d H:i:s')]);
+                if(!$update)throw new Exception('失敗，會盡快處理問題。');
             }
+            /*
+            |  Send mail
+            */
+            if(!empty($merchant_email = $gp_activity->trip_activity_ticket->merchant->email)){
+                $this->emailAPI->group_achieved_noti_for_merchant(
+                    $merchant_email,
+                    $gp_activity->trip_activity_ticket->name_zh_tw,
+                    $gp_activity->start_date,
+                    $gp_activity->start_time,
+                    $gp_activity->gp_activity_id,
+                    env('DOMAIN_PATH').'/group_events/'.$gp_activity->gp_activity_id
+                    );
+            }
+
         }
+
         return $action;
     }
     //---------------------------------------------------------------------
     //  退團
     //---------------------------------------------------------------------
+    function delete_participant_by_ticket_id($ticket_id,$gp_activity_id){
+        if(!$gp_activity = $this->repo->findBy($gp_activity_id)) throw new Exception('失敗');
+        //----------------------------------------------------------------------
+        // 檢查人數會否小於成團下限
+        //----------------------------------------------------------------------
+        if($gp_activity['achieved_at'] == true){
+            $min_group_joiner = $gp_activity->trip_activity_ticket->min_participant_for_gp_activity;
+            if($min_group_joiner != null && count($gp_activity->applicants) - 1 < $min_group_joiner){
+                $gp_activity->update(['is_available_group_for_limit_gp_ticket' => false,'achieved_at' => null]);
+                if(!$gp_activity) throw new Exception('失敗，會盡快處理問題。');
+            }
+        }
+
+        return $delete_applicant = $this->repo->delete_participant_by_ticket_id($ticket_id, $gp_activity_id);
+
+    }
     function delete_participant($activity_id, $applicant_id){
         $gp_activity = $this->repo->first_by_gp_activity_id($activity_id, false, true);
 
         //----------------------------------------------------------------------
         // 檢查人數會否小於成團下限
         //----------------------------------------------------------------------
-        if($gp_activity['is_available_group_for_limit_gp_ticket'] == true){
+        if($gp_activity['achieved_at']){
             $min_group_joiner = $gp_activity->trip_activity_ticket->min_participant_for_gp_activity;
             if($min_group_joiner != null && count($gp_activity->applicants) - 1 < $min_group_joiner){
                 $gp_activity->update(['is_available_group_for_limit_gp_ticket' => false]);
@@ -257,17 +280,25 @@ class UserGroupActivityService
 
     }
 
+    function get_participant_by_ticket_id($activity_ticket_id){
+        $participant = $this->repo->find_participant($activity_ticket_id, 'ticket_id');
+        if(!$participant)return false;
+        $participant->Group_activity = $this->helper_gp_is_achieved($participant->Group_activity);
+        return $participant;
+
+    }
+
     function pdt_has_stock($activity_id){
-        $gp_activity = $this->repo->first_by_gp_activity_id($activity_id, false, true);
+        if(!$gp_activity = $this->repo->first_by_gp_activity_id($activity_id, false, true)) throw new Exception('event is invalid');
 
         $gp_activity->has_pdt_stock = true;
-        if($gp_activity->is_available_group_for_limit_gp_ticket == false){
+        if(!empty($gp_activity->achieved_at)){
             $gp_activity = $this->helper_check_allow_update_to_is_achieved($gp_activity);
 
             if($gp_activity->allow_achieved){
-                $this->repo->update($gp_activity->id, ['has_pdt_stock' => true, 'is_available_group_for_limit_gp_ticket' => true]);
+                $this->repo->update_by_id($gp_activity->id, ['has_pdt_stock' => true, 'is_available_group_for_limit_gp_ticket' => true, 'achieved_at' => date('Y-m-d H:i:s')]);
             }else{
-                $this->repo->update($gp_activity->id, ['has_pdt_stock' => true]);
+                $this->repo->update_by_id($gp_activity->id, ['has_pdt_stock' => true]);
             }
         }else{
             $gp_activity->update();
@@ -279,41 +310,35 @@ class UserGroupActivityService
     //  轉移參加者如果票屬某個團
     //  參加者把票券轉移時，同時也把參加者的「角色」轉移給新參加者。
     //-------------------------------------------------------------
-    public function change_participants_in_gp_activity_if_has_relate_ticket($old_participant_id, $new_participant_id, $ticket_uid){
-        //------------------------------------------------
-        //  檢查團是否存在且檢查
-        //------------------------------------------------
-        $check_ticket_is_relate_gp = $this->repo->get_user_activity_ticket_and_gp_activity_relation($ticket_uid);
-        if(!$check_ticket_is_relate_gp){ //即此票券沒有用在任何一團
-            return true;
+    public function change_participant($gp_activity_id, $new_participant_id, $authorize_keys = array()){
+        if(!$gp_activity = $this->repo->findBy($gp_activity_id, 'gp_activity_id')) throw new Exception('查詢無此團。');
+        if(!empty($authorize = $this->get_authorize($gp_activity))){
+            if($authorize['authorize_type'] == 2){
+                if($authorize_keys['ticket_type'] != ProductTicketTypeEnum::TRIP_ACTIVITY_TICKET) throw new Exception('失敗。');
+
+                if(!$participant = $gp_activity->applicants->where('ticket_type', $authorize_keys['ticket_type'])->where('ticket_id', $authorize_keys['ticket_id'])->first()) throw new Exception('透過票權授權其他人加入失敗。');
+            }
         }
-        if(empty($check_ticket_is_relate_gp->user_gp_activity_id)){
-            throw new Exception('轉移失敗。');
-        }
-        $gp_activity = $this->repo->first_by_gp_activity_id($check_ticket_is_relate_gp->user_gp_activity_id, false, true);
-        if(!$gp_activity){
-            throw new Exception('轉移失敗。');
-        }
-        //------------------------------------------------------
-        // 更換參加者
-        //------------------------------------------------------
-        $participant_ids = array_pluck($gp_activity['applicants'], 'applicant_id');
-        if(!in_array($old_participant_id, $participant_ids)){
-            throw new Exception('票券持有人不是此團參加者。');
-        }
-        //轉移
-        $this->repo->update_participant($gp_activity['id'], $old_participant_id, ['applicant_id' => $new_participant_id]);
+        if(!$this->repo->update_participant($participant['id'], ['applicant_id' => $new_participant_id])) throw new Exception('轉移失敗。');
 
         return true;
+
     }
-    
+
     function invalid_by_merchant($id){
         $gp_activity = $this->repo->first($id);
         //條件： 1.未滿團 2.是有限制的
-        if($gp_activity->is_available_group_for_limit_gp_ticket != 0){
+        if(!empty($gp_activity->achieved_at)){
             throw new Exception('已成團，不能解散。');
         }
-        return $this->repo->update($id, ['invalid_by_merchant' => true]);
+        return $this->repo->update_by_id($id, ['invalid_by_merchant' => true]);
+    }
+
+    function get_authorize($gp_activity){
+        if(!empty($gp_activity['activity_ticket_id'])){
+            return ['authorize_type' => 2, 'ticket_id' => $gp_activity['activity_ticket_id']];
+        }
+        return null;
     }
 //---------------------------------------------------------------------
 //  Helper
@@ -341,7 +366,7 @@ class UserGroupActivityService
     //  output: $gp_activity增加allow_cancel_by_merchant
     //---------------------------------------------------------------------
     function helper_allow_cancel_by_merchant($gp_activity){
-        if(!$gp_activity->is_available_group_for_limit_gp_ticket){
+        if(empty($gp_activity->is_achieved)){
             $gp_activity->allow_cancel_by_merchant = true;
         }else{
             $gp_activity->allow_cancel_by_merchant = false;
@@ -350,7 +375,7 @@ class UserGroupActivityService
         //是否有限制團販賣
         $has_limit_sold = $gp_activity->trip_activity_ticket->time_range_restrict_group_num_per_day;
         //是否已成團
-        $is_available_gp = $gp_activity->is_available_group_for_limit_gp_ticket;
+        $is_available_gp = $gp_activity->achieved_at;
         //是否有最少成團人數
         $need_min_participant = $gp_activity->need_min_joiner_for_avl_gp;
         if($has_limit_sold && !$is_available_gp && !empty($need_min_participant)){
@@ -366,14 +391,17 @@ class UserGroupActivityService
     // 是否已成團(轉譯)
     //---------------------------------------------------------------------
     function helper_gp_is_achieved($gp_activity){
-        $gp_activity->is_achieved = $gp_activity->is_available_group_for_limit_gp_ticket;
-
+        if($gp_activity->is_available_group_for_limit_gp_ticket || !empty($gp_activity->achieved_at)){
+            $gp_activity->is_achieved = true;
+        }else{
+            $gp_activity->is_achieved = false;
+        }
         return $gp_activity;
 
     }
     //---------------------------------------------------------------------
     // 檢查能否轉做Achieved狀態;
-    // 用is_available_group_for_limit_gp_ticket
+    // 用 achieved_at
     //
     //      2.未達人數（需搶團）
     //      4.搶團失敗
@@ -381,37 +409,22 @@ class UserGroupActivityService
     //      檢查順序要相反
     //
     //---------------------------------------------------------------------
+    function get_forbidden_reason($gp_activity){
+        return $this->helper_check_allow_update_to_is_achieved($gp_activity);
+    }
     function helper_check_allow_update_to_is_achieved($gp_activity){
-        $gp_activity->foridden_reason = null;
+        $gp_activity->forbidden_reason = null;
 
-        function helper_generate_time_ranges($start_time, $qty, $interval_unit){
-            $time_data = array();
-            $start_time = date('H:i:s', strtotime($start_time));
-            if(!in_array($interval_unit, ['hour'])) return false;
-            for($i = 1; $i <= $qty; $i++){
-                array_push($time_data, Carbon::createFromFormat('H:i:s', $start_time)->addHours($i - 1)->toTimeString());
-            }
-
-            return $time_data;
-        }
-        function helper_get_two_time_range_intersection($time_ranges_a, $time_ranges_b){
-            $data = array_count_values(array_merge_recursive($time_ranges_a, $time_ranges_b));
-            $output = array();
-            foreach ($data as $k => $v){
-                if($v > 1) array_push($output, $k);
-            }
-            return $output;
-        }
         //---------------------------------
         // 是否達最少人數
         //---------------------------------
         if($gp_activity->need_min_joiner_for_avl_gp && $gp_activity->applicants->count() < $gp_activity->trip_activity_ticket->min_participant_for_gp_activity){
-            $gp_activity->foridden_reason = 2;
+            $gp_activity->forbidden_reason = 2;
         //---------------------------------
         // 檢查有沒有存貨
         //---------------------------------
         }elseif($gp_activity->has_pdt_stock == false) {
-            $gp_activity->foridden_reason = 5;
+            $gp_activity->forbidden_reason = 5;
         //---------------------------------
         // 檢查有沒有與「成團」的團相沖
         //---------------------------------
@@ -420,33 +433,51 @@ class UserGroupActivityService
             $trip_activity_tickets = collect($trip_activity_tickets)->keyBy('id');
 
             $same_date_gp_activities = UserGroupActivity::whereIn('activity_ticket_id',$trip_activity_tickets->keys())
-                ->where('start_date',$gp_activity->start_date)->where('is_available_group_for_limit_gp_ticket',1)->get();
+                ->where('start_date',$gp_activity->start_date)->whereNotNull('achieved_at')->get();
             /*檢查每團時間 TODO 考盧要否改成起始至結束時間*/
-            $present_time_range = helper_generate_time_ranges($gp_activity->start_time, $gp_activity->trip_activity_ticket['qty_unit'], $gp_activity->trip_activity_ticket['qty_unit_type']);
+            $present_time_range = $this->helper_generate_time_ranges($gp_activity->start_time, $gp_activity->trip_activity_ticket['qty_unit'], $gp_activity->trip_activity_ticket['qty_unit_type']);
             $intersection_times = array();
             foreach ($same_date_gp_activities as $same_date_gp_activity){
                 $gp_activity_ticket = $trip_activity_tickets[$same_date_gp_activity['activity_ticket_id']];
-                $group_time_range = helper_generate_time_ranges($same_date_gp_activity['start_time'], $gp_activity_ticket['qty_unit'], $gp_activity_ticket['qty_unit_type']);
-                $get_intersection_times_from_present_and_group = helper_get_two_time_range_intersection($present_time_range, $group_time_range);
+                $group_time_range = $this->helper_generate_time_ranges($same_date_gp_activity['start_time'], $gp_activity_ticket['qty_unit'], $gp_activity_ticket['qty_unit_type']);
+                $get_intersection_times_from_present_and_group = $this->helper_get_two_time_range_intersection($present_time_range, $group_time_range);
                 $intersection_times = array_merge_recursive($intersection_times, $get_intersection_times_from_present_and_group);
             }
             $count_intersection_times = array_count_values($intersection_times);
             foreach ($count_intersection_times as $k => $v){
                 if($v >= $gp_activity->trip_activity_ticket['time_range_restrict_group_num_per_day']){
-                    $gp_activity->foridden_reason = 4;
+                    $gp_activity->forbidden_reason = 4;
                 }
             }
         }
 
-        if($gp_activity->foridden_reason == null){
+        if($gp_activity->forbidden_reason == null){
             $gp_activity->allow_achieved = true;
         }else{
             $gp_activity->allow_achieved = false;
         }
 
-        $gp_activity->certified_info = $gp_activity->foridden_reason;
+        $gp_activity->certified_info = $gp_activity->forbidden_reason;
 
         return $gp_activity;
+    }
+    function helper_generate_time_ranges($start_time, $qty, $interval_unit){
+        $time_data = array();
+        $start_time = date('H:i:s', strtotime($start_time));
+        if(!in_array($interval_unit, ['hour'])) return false;
+        for($i = 1; $i <= $qty; $i++){
+            array_push($time_data, Carbon::createFromFormat('H:i:s', $start_time)->addHours($i - 1)->toTimeString());
+        }
+
+        return $time_data;
+    }
+    function helper_get_two_time_range_intersection($time_ranges_a, $time_ranges_b){
+        $data = array_count_values(array_merge_recursive($time_ranges_a, $time_ranges_b));
+        $output = array();
+        foreach ($data as $k => $v){
+            if($v > 1) array_push($output, $k);
+        }
+        return $output;
     }
 
 }
