@@ -69,7 +69,6 @@
 <script>
 export default {
     ready() {
-      console.log('Bottom ready.');
     },
     props: ['task', 'params'],
     data() {
@@ -84,21 +83,29 @@ export default {
             taskValsAfterLoginExcute: {
                 type: Object
             },
-            taskAfterLoginExcute: {
-                type: Object
-            }
+            taskAfterLoginExcute: null
         }
     },
     mounted() {
     },
     methods: {
       beforeOpen (event) {
-          this.taskAfterLoginExcute = event.params.task
+        if(event == undefined || event.params.task == undefined)return
+        this.taskAfterLoginExcute = event.params.task
+        if(event.params.vals != null){
           this.taskValsAfterLoginExcute = event.params.vals
-        },
+        }
+        
+      },
       afterLoginExecute(){
-        console.log('comming')
-        this.taskAfterLoginExcute.fireWith(window, this.taskValsAfterLoginExcute)
+        if(this.taskAfterLoginExcute == null) return
+        if(this.taskValsAfterLoginExcute == null){
+          this.taskAfterLoginExcute.fire();
+        }else if(typeof this.taskValsAfterLoginExcute == 'object'){
+          this.taskAfterLoginExcute.fireWith(window, this.taskValsAfterLoginExcute)
+        }else{
+          this.taskAfterLoginExcute.fire(this.taskValsAfterLoginExcute)
+        }
       },
       fbLogin(){
         //this.newPageLoginActionFB()
@@ -134,7 +141,6 @@ export default {
           password: vm.password
         })
         .then(function (response) {
-          console.log(response);
           if (response.status==200) {
             vm.afterLoginExecute();
             vm.$modal.hide('login-modal');

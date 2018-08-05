@@ -59,7 +59,11 @@ class ProductController extends Controller
             return $this->apiFormatter->error($this->apiModel);
         };
         //save db
-        if($save_to_db = $tripActivityTicketService->save_gp_buying_status_img($gp_buying_status_id, $img['img_path'], $img['img_format']))
+        if(!$save_to_db = $tripActivityTicketService->save_gp_buying_status_img($gp_buying_status_id, $img['img_path'], $img['img_format'])){
+            $this->apiModel->setMsg('圖片儲存失敗。');
+            return $this->apiFormatter->error($this->apiModel);
+        }
+
         return $this->apiFormatter->success($this->apiModel);
     }
 }

@@ -45,7 +45,7 @@ Route::post('facebook/messenger/merchant/auto_reply','FacebookMessengerControlle
 **驗證是否登入
 */
 Route::post('/authCheck', function (Request $request) {
-    if (!$request::ajax()) return view('/');
+    if (!$request::ajax()) response(array('status' => 'error','msg' => 'need api'));
     if (Auth::check()) {
         return response(array('status' => 'ok'));
     } else {
@@ -84,6 +84,16 @@ Route::get('/activity/{activity_uni_name}','TripActivityController@get_trip_acti
 */
 Route::get('/group_events/{gp_activity_id}','UserGroupActivityController@show_group_activity');
 Route::group(['middleware' => 'auth'], function () {
+    /*
+     * Auth Check API
+     */
+    Route::post('/Authorization/Check', function (Request $request) {
+        if (Auth::check()) {
+            return response()->json(array('success' => true));
+        } else {
+             return response()->json(array('success' => false, 'msg' => 'something wrong'));
+        }
+    });
     /*
     *  email confirm
     */

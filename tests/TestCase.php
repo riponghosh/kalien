@@ -16,7 +16,7 @@ abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     public function createApplication()
     {
-        putenv('DB_CONNECTION=sqlite_testing');
+        // putenv('DB_CONNECTION=sqlite_testing');
 
         $app = require __DIR__.'/../bootstrap/app.php';
 

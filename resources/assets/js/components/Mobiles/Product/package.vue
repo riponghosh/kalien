@@ -70,7 +70,7 @@
 				currencyUnit:'',
 				currencyRate:Object,
 				createEventMethod:false,
-				createEventId:-1,
+				createEventId: null,
 				eventPackageName:'',
 				minParticipantGpActivity:null,
 				maxParticipantGpActivity:null

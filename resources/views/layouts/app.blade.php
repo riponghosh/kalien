@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="Description" content="媒合交友活動平台。">
+    <meta name="Description" content="提供餐廳折價券，居酒屋，酒吧，桌遊，密室逃脫，多買多送。買越多折越多。媒合交友活動平台。">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta property="og:url" content="{{Request::url()}}" >
     <meta property="fb:app_id" content="{{env('FB_APP_ID')}}">

@@ -22,7 +22,9 @@ class TripActivityController extends Controller
         $trip_activity = $tripActivityFormatter->dataFormat($get_trip_activity);
         $trip_activity_tickets = $trip_activity['trip_activity_tickets'];
 
-        return view('tripActivity/tripActivity', compact('trip_activity', 'trip_activity_tickets'));
+        //return view('tripActivity/tripActivity', compact('trip_activity', 'trip_activity_tickets'));
+
+        return view('ProductDirect', compact('trip_activity', 'trip_activity_tickets'));
     }
 
     function get_trip_activity_mobile(Request $request, TripActivityFormatter $tripActivityFormatter, TripActivityTicketsFormatter $tripActivityTicketsFormatter){

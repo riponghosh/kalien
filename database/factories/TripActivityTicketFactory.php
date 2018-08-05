@@ -9,7 +9,6 @@ $factory->define(App\Models\TripActivityTicket::class, function (Faker $faker) {
         'currency_unit' => 'TWD',
         'qty_unit' => 1,
         'qty_unit_type' => 'hour',
-        'available' => 1,
-        'trip_activity_id' => 1
+        'available' => 1
     ];
 });

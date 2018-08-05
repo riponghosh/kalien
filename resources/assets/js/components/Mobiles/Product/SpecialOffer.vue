@@ -15,8 +15,10 @@
         <div v-for="(sepcialOffer,index) in sepcialOffers" :id="'tab'+index" :class="['tab-pane fade in',{active:index==0}]">
           <p>{{sepcialOffer.name}}</p>
           <p>{{sepcialOffer.desc}}</p>
-          <img v-if="sepcialOffer.media.length" :src="sepcialOffer.media[0].url" @error="imageRemove($event)" class="offer-image row">
-          <div v-else class="row" style="height:235px;background:grey"></div>
+          <div class="row">
+            <img v-if="sepcialOffer.media.length" :src="sepcialOffer.media[0].url" @error="imageRemove($event)" class="offer-image">
+            <div v-else class="row" style="height:235px;background:grey"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -44,9 +46,9 @@
       }
     },
     methods: {
-        sortSepcialOffers(){
-          this.sepcialOffers=this.sepcialOffers.sort(function(a,b) {return a.people_amt - b.people_amt;});
-        },
+      sortSepcialOffers(){
+        this.sepcialOffers=this.sepcialOffers.sort(function(a,b) {return a.people_amt - b.people_amt;});
+      },
       getSpectialOffer(){
         for(let i=0;i<this.trip_activity_tickets.length;i++){
           if (this.trip_activity_tickets[i].gp_buying_status.length>0) {
@@ -99,5 +101,6 @@
 .offer-image{
   height: 253px;
   object-fit:cover;
+  width: 100%;
 }
 </style>

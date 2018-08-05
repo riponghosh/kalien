@@ -31,7 +31,7 @@ class UserActivityTicketController extends Controller
         if (!$action) throw new Exception('', 3);
         if(!empty($product_merchant_telegram_acs = $action->Trip_activity_ticket->Trip_activity->Merchant->telegram_ac)){
             foreach($product_merchant_telegram_acs as $product_merchant_telegram_ac) {
-                $ticket_info = '🎫' . $action['sub_title'] . chr(10) . '💵' . $action['amount'] . chr(10) . '👨‍💼' . $action->owner['name'] . chr(10) . '產品名：' . $action['name'];
+                $ticket_info = '🎫' . $action['sub_title'] . chr(10) . '💵' . $action['amount'] . chr(10) . '👨‍💼' . $action->owner['name'] . chr(10) . '產品名：' . $action['name'].chr(10).'編號'.'PN_180232'.$action['id'];
                 try {
                     $telegramService->message_sender($ticket_info, $product_merchant_telegram_ac['account_id']);
                 } catch (Exception $e) {

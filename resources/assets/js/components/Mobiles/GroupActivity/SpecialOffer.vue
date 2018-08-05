@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="container offer-border" v-if="JoinersPoints.length>0">
-      <p class="special-offer">{{ $t('Sepcial Offer') }}</p>
-      <ul class="nav nav-pills offer-tab  nav-justified">
+      <p class="special-offer" style="margin-top: 15px;">{{ $t('Sepcial Offer') }}</p>
+      <ul class="nav nav-pills offer-tab  nav-justified m-b-15">
         <li v-for="JoinersPoint in JoinersPoints" :class="[{active:JoinersPoint.width>=100}]">
           <a data-toggle="pill">
             <span class="offer-people">{{JoinersPoint.people}}p</span><br>
@@ -18,7 +18,7 @@
             <div v-if="JoinersPoint.joinersPosition" v-bind:class="['ps-bg-stepnum current-joiners']" :style="{'width':JoinersPoint.width+'%'}">{{joiners}}</div>
             <div v-bind:class="['text-center ps-bg-stepnum',JoinersPoint.width==100 ? JoinersPoint.color : '']">{{JoinersPoint.people}}</div>
             <div class="progress" ><div v-bind:class="['progress-bar',JoinersPoint.bgcolor]" :style="{width:JoinersPoint.width+'%'}"></div></div>
-            <a href="#" v-bind:class="['ps-bg-dot', JoinersPoint.width==100 ? JoinersPoint.bgcolor : '',{finished:JoinersPoint.finish}]"></a>
+            <a v-bind:class="['ps-bg-dot', JoinersPoint.width==100 ? JoinersPoint.bgcolor : '',{finished:JoinersPoint.finish}]"></a>
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@
     ready() {
     },
     created: function(){
-      this.joiners=this.trip_activity_tickets.length;
+      this.joiners=this.participants.length;
       this.sepcialOffers=this.getSpectialOffer();
       this.sortSepcialOffers();
       this.setProgress();

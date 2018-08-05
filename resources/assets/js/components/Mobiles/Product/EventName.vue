@@ -3,16 +3,17 @@
 		<form>
 			<div class="panel panel-default full-panel">
 				<div class="panel-body form-body" id="body-detect">
-					<h5 class="text-center event-title">Event Name</h5>
+					<h5 class="text-center event-title">輸入活動名稱...</h5>
 					<div class="form-group create-event-form-group">
-						<input type="text" class="form-control create-event-name-form" placeholder="Event Name" name="event_name" ref="activityTitle" v-model="eventName">
+						<input type="text" class="form-control create-event-name-form" placeholder="輸入你的團名..." name="event_name" ref="activityTitle" v-model="eventName">
 						<div @click="setEventName" class="send-btn"><i class="fa fa-send-o"></i></div>
 					</div>
 
 					<div class="form-group create-event-form-group2">
-						<p>Use Examples</p>
-						<a @click="getEventName($event)" class="text1">Join my Event~</a><br>
-						<a @click="getEventName($event)">Join my Event 2~</a>
+						<p style="font-size: 12px;">使用預設活動名稱</p>
+						<a @click="getEventName($event)" class="text1">加入我的飯局吧</a><br>
+						<a @click="getEventName($event)" class="text1">八卦姊妹淘</a><br>
+						<a @click="getEventName($event)">老朋友聚會</a>
 					</div>
 				</div>
 			</div>
@@ -68,7 +69,7 @@ input:focus{
 	border: 1px solid #42f30b !important;
 }
 .event-title{
-	margin: 30px 0px;
+	margin: 15px 0px;
 }
 .event-bg{
 	position: fixed;
@@ -105,7 +106,7 @@ input:focus{
 	position: relative;
 }
 .create-event-form-group2{
-	padding: 30px 15px;
+	padding: 15px 15px;
 }
 .create-event-form-group2 a{
 	line-height: 25px;

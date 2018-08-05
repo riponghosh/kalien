@@ -102,6 +102,12 @@ class UserGroupActivityService
             }
         }
         //----------------------------------
+        // 上限人數存在時不能使用空值
+        //----------------------------------
+        if(empty($limit_joiner) && !empty($get_trip_activity_ticket['max_participant_for_gp_activity'])){
+            $limit_joiner = $get_trip_activity_ticket['max_participant_for_gp_activity'];
+        }
+        //----------------------------------
         //  新增start_at(UTC)
         //----------------------------------
         $ticket_tz = $get_trip_activity_ticket->Trip_activity->time_zone;

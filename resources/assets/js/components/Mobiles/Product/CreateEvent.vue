@@ -16,18 +16,21 @@
 				</div>
 				<div class="form-group create-event-form-group styled-select">
 					<select :class="['form-control create-event-form',{placeholder:createEventForm.startTime==null}]" name="time" v-model="createEventForm.startTime" ref="startTime">
-						<option value="null" disabled selected hidden>Choose Time</option>
-						<option v-for="timeRange in timeRanges">{{$moment(timeRange,'HH:mm:ss').format('HH:mm')}}</option>
+						<option value="null" disabled selected hidden>時間</option>
+						<!-- <option v-for="timeRange in timeRanges">{{$moment(timeRange,'HH:mm:ss').format('HH:mm')}}</option> -->
+						<option v-for="timeRange in closingTime">{{$moment(timeRange,'HH:mm:ss').format('HH:mm')}}</option>
+						<option v-if="closingTime.length>0&&openingTime.length>0" disabled>Close</option>
+						<option v-for="timeRange in openingTime">{{$moment(timeRange,'HH:mm:ss').format('HH:mm')}}</option>
 					</select>
 					<div class="input-icon"><i class="fa fa-clock-o"></i></div>
 				</div>
 			</div>
-			<div class="panel-footer">Event Informations</div>
+			<div class="panel-footer">資訊</div>
 			<div class="panel-body form-body">
 				<div class="form-group create-event-form-group">
 					<select :class="['form-control create-event-form',{placeholder:createEventForm.limitJoiner==null&&!maxJoinersNoLimit}]" name="joiners" v-model="createEventForm.limitJoiner" ref="limitJoiner">
 						<option v-if="maxJoinersNoLimit" value="null" selected>no limit</option>
-						<option v-else value="null" disabled selected hidden>Number of Joiners</option>
+						<option value="null" selected>人數 (可選)</option>
 						<option v-for="value in range(minParticipantGpActivity, maxParticipantGpActivity)" :value="value">
 							<span v-if="value==minParticipantGpActivity">{{value}} (minimum)</span>
 							<span v-else-if="value==maxParticipantGpActivity">{{value}} (maximum)</span>
@@ -37,7 +40,7 @@
 					<div class="input-icon"><i class="fa fa-user-o"></i></div>
 				</div>
 				<div class="form-group create-event-form-group">
-					<input  type="text" class="form-control create-event-form" placeholder="Event Name" name="event_name" v-model="createEventForm.activityTitle" ref="activityTitle" @click="eventPageAction" readonly="readonly" unselectable="on" onfocus="this.blur()">
+					<input  type="text" class="form-control create-event-form" placeholder="活動名稱" name="event_name" v-model="createEventForm.activityTitle" ref="activityTitle" @click="eventPageAction" readonly="readonly" unselectable="on" onfocus="this.blur()">
 					<div class="input-icon"><i class="fa fa-sticky-note-o"></i></div>
 				</div>
 			</div>
@@ -90,8 +93,10 @@
 				tripActivityTicketId:null,
 				packageName:'',
 				timeRanges:[],
-				minParticipantGpActivity:-1,
-				maxParticipantGpActivity:0,
+				openingTime:[],
+				closingTime:[],
+				minParticipantGpActivity: null,
+				maxParticipantGpActivity: null,
 				maxJoinersNoLimit:false,
 				eventNamePageShow:false,
 				eventName:null
@@ -102,15 +107,6 @@
 				this.removeFromSetData();
 				this.datePickerOpen();
 				this.getDateTimeQuery();
-			},
-			minParticipantGpActivity: function(){
-				this.minParticipantGpActivity = this.minParticipantGpActivity == null ?1 : this.minParticipantGpActivity;
-			},
-			maxParticipantGpActivity: function(value){
-				if (value==null) {
-					this.maxJoinersNoLimit=true;
-					this.maxParticipantGpActivity=20;
-				}
 			},
 			eventName:function(value){
 				this.createEventForm.activityTitle=value;
@@ -126,19 +122,35 @@
 			}
 		},
 		methods: {
+			setMinEventJoiners(value){
+				if(value === null){
+					this.minParticipantGpActivity = 1
+				}else{
+					this.minParticipantGpActivity = value
+				}
+				//this.minParticipantGpActivity = value === null ? 1 : value;
+			},
+			setMaxEventJoiners(value){
+				if (value === null) {
+					this.maxJoinersNoLimit=true;
+					this.maxParticipantGpActivity=80;
+				}else{
+					this.maxParticipantGpActivity = value;
+				}
+			},
 			hideCreateEventPage(){
 				this.$emit('create-event-method', false)
 			},
 			getDateTimeQuery(){
-				this.$loader.methods.start();
 				let vm = this
+				vm.$loader.methods.start();
 				axios.post('/api-web/v1/activity_ticket/get_ticket_available_purchase_dates_and_time_ranges', {
 					trip_activity_ticket_id: vm.tripActivityTicketId
 				})
 				.then(function (response) {
+					vm.$loader.methods.stop();
 					vm.setDisableDate(response);
 					vm.setTimeRange(response);
-					vm.$loader.methods.stop();
 				})
 				.catch(function (error) {
 				});
@@ -154,6 +166,7 @@
 			},
 			setTimeRange(response){
 				this.timeRanges=response.data.data.time_ranges;
+				this.filtterTimeRanges();
 			},
 			createEventFormSubmit(){
 				let vm = this;
@@ -173,12 +186,12 @@
 					if (response.data.success) {
 						vm.hideCreateEventPage();
 						vm.$swal({
-							title: "Event Created",
-							text: "Do you want to go event page ?",
+							title: "活動建立成功",
+							text: "您的活動已建立，打開看看",
 							type: "success",
 							showCancelButton: true,
 							confirmButtonClass: 'btn-success waves-effect waves-light',
-							confirmButtonText: Vue.t('Yes'), 
+							confirmButtonText: '打開活動', 
 						})
 						.then((confirm) => {
 							window.location.href=response.data.gp_activity_url;
@@ -187,12 +200,18 @@
 						});
 					}
 					else{
+						vm.$swal('建立失敗', "", "error");
+						return
 						vm.$swal(response.data.msg, "", "error");
 					}
 
 				})
 				.catch(function (error) {
-					console.log(error)
+					vm.$loader.methods.stop();
+					console.log(error.response.status)
+					if (error.response.status==401) {
+						vm.$modal.show('login-modal',{ task: $.Callbacks().add(vm.createEventFormSubmit),vals: {data: data} });
+					}
 				});
 			},
 			removeFromSetData(){
@@ -229,11 +248,12 @@
 					return;
 				}
 				*/
+				/*
 				if (!this.createEventForm.limitJoiner && !this.maxJoinersNoLimit) {
 					this.$refs.limitJoiner.focus();
 					return;
 				}
-
+				*/
 				this.createEventFormSubmit();
 			},
 			range(start, end) {
@@ -256,10 +276,16 @@
 			setHeader(){
 				let div = document.createElement("div");
 				let parent=document.getElementsByClassName("vdp-datepicker__calendar")[0];
-				let element='<h5 class="text-center event-title">Event Start date</h5>';
+				let element='<h5 class="text-center event-title">活動日期</h5>';
 				if (parent.firstChild.nodeName!='DIV') {
 					parent.insertBefore(div,parent.getElementsByTagName("header")[0]).innerHTML=element;
 				}
+			},
+			filtterTimeRanges(){
+				// this.timeRanges.sort();
+				let close=this.timeRanges[(this.timeRanges.length)-1];
+				this.closingTime=this.timeRanges.filter(function(number) {return close >= number;});
+				this.openingTime=this.timeRanges.filter(function(number) {return close < number;});
 			}
 		}
 	}
